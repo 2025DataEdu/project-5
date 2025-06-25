@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Clock } from "lucide-react";
+import { Sparkles, Clock, X } from "lucide-react";
 
 interface SmartSearchBoxProps {
   onSearch: (query: string, isNaturalLanguage: boolean) => void;
@@ -38,6 +38,10 @@ export const SmartSearchBox = ({
     onSearch(search, true);
   };
 
+  const handleClearQuery = () => {
+    setQuery("");
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -46,8 +50,8 @@ export const SmartSearchBox = ({
   };
 
   return (
-    <Card className="mb-6 shadow-lg border-0 bg-white/90 backdrop-blur">
-      <CardHeader>
+    <Card className="mb-4 shadow-lg border-0 bg-white/95 backdrop-blur">
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-2xl">
           <Sparkles className="h-5 w-5 text-blue-600" />
           스마트 업무규정 검색
@@ -72,34 +76,47 @@ export const SmartSearchBox = ({
           </div>
         </div>
 
-        {/* 최근 검색어 */}
+        {/* 최근 검색어 - 컴팩트한 박스 형태 */}
         <div>
           <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
             <Clock className="h-4 w-4" />
             최근 검색
           </h4>
-          <div className="space-y-1">
+          <div className="flex flex-wrap gap-2">
             {recentSearches.map((search, index) => (
-              <div 
+              <Badge 
                 key={index} 
-                className="text-sm text-gray-600 hover:text-blue-600 cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors" 
+                variant="outline"
+                className="cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors max-w-xs truncate text-xs"
                 onClick={() => handleRecentSearchClick(search)}
               >
                 {search}
-              </div>
+              </Badge>
             ))}
           </div>
         </div>
 
-        {/* 통합 검색 입력 */}
+        {/* 통합 검색 입력 - X 버튼 포함 */}
         <div className="space-y-3">
-          <Textarea 
-            placeholder="키워드나 질문을 입력하세요 (예: 개인정보, 출장비 신청 절차는 어떻게 되나요?)" 
-            value={query} 
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="min-h-[100px] border-2 border-blue-200 focus:border-blue-400" 
-          />
+          <div className="relative">
+            <Textarea 
+              placeholder="키워드나 질문을 입력하세요 (예: 개인정보, 출장비 신청 절차는 어떻게 되나요?)" 
+              value={query} 
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="min-h-[100px] border-2 border-blue-200 focus:border-blue-400 pr-10" 
+            />
+            {query && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-gray-100"
+                onClick={handleClearQuery}
+              >
+                <X className="h-4 w-4 text-gray-500" />
+              </Button>
+            )}
+          </div>
           <Button 
             onClick={handleSmartSearch} 
             disabled={isSearching || !query.trim()} 

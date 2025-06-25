@@ -9,7 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      결재문서목록: {
+        Row: {
+          id: number
+          공개여부: string | null
+          생성일자: string | null
+          전체부서명: string | null
+          제목: string | null
+        }
+        Insert: {
+          id: number
+          공개여부?: string | null
+          생성일자?: string | null
+          전체부서명?: string | null
+          제목?: string | null
+        }
+        Update: {
+          id?: number
+          공개여부?: string | null
+          생성일자?: string | null
+          전체부서명?: string | null
+          제목?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
