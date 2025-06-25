@@ -33,6 +33,33 @@ export type Database = {
         }
         Relationships: []
       }
+      직원정보: {
+        Row: {
+          id: number
+          담당업무: string | null
+          부서명: string | null
+          전화번호: string | null
+          직책: string | null
+          팩스번호: string | null
+        }
+        Insert: {
+          id: number
+          담당업무?: string | null
+          부서명?: string | null
+          전화번호?: string | null
+          직책?: string | null
+          팩스번호?: string | null
+        }
+        Update: {
+          id?: number
+          담당업무?: string | null
+          부서명?: string | null
+          전화번호?: string | null
+          직책?: string | null
+          팩스번호?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

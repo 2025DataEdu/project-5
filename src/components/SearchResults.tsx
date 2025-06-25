@@ -5,18 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { FileIcon, Calendar, Building, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-
-interface SearchResult {
-  id: number;
-  title: string;
-  content: string;
-  source: string;
-  department: string;
-  lastModified: string;
-  fileName: string;
-  type: string;
-  url: string;
-}
+import { SearchResult } from "@/services/searchService";
 
 interface SearchResultsProps {
   results: SearchResult[];
@@ -46,6 +35,10 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "가이드":
         return "bg-teal-100 text-teal-800 border-teal-200";
+      case "결재문서":
+        return "bg-indigo-100 text-indigo-800 border-indigo-200";
+      case "직원정보":
+        return "bg-cyan-100 text-cyan-800 border-cyan-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }

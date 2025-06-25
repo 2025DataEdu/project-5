@@ -1,11 +1,11 @@
 
 import { useState } from "react";
-import { allMockResults } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
+import { performSearch, SearchResult } from "@/services/searchService";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -19,34 +19,24 @@ export const useSearchLogic = () => {
     setShowHistory(false);
     setAiResponse("");
 
-    setTimeout(async () => {
-      let filteredResults;
+    try {
+      console.log('Starting search for:', query);
       
-      if (isNaturalLanguage) {
-        // 자연어 검색 시뮬레이션 - 더 지능적인 매칭
-        const keywords = ["출장", "교육", "절차", "서류", "신청"];
-        filteredResults = allMockResults.filter(result => 
-          keywords.some(keyword => 
-            result.title.includes(keyword) || result.content.includes(keyword)
-          )
-        );
+      // Search in Supabase tables
+      const results = await performSearch(query);
+      console.log('Search results from Supabase:', results);
+      
+      if (results.length > 0) {
+        setSearchResults(results);
         
         // 자연어 검색의 경우 비교 및 히스토리 표시
-        if (filteredResults.length > 0) {
-          setSelectedRegulation(filteredResults[0]);
+        if (isNaturalLanguage && results.length > 0) {
+          setSelectedRegulation(results[0]);
           setShowComparison(true);
           setShowHistory(true);
         }
       } else {
-        // 일반 키워드 검색
-        filteredResults = allMockResults.filter(result => 
-          result.title.toLowerCase().includes(query.toLowerCase()) ||
-          result.content.toLowerCase().includes(query.toLowerCase())
-        );
-      }
-      
-      // 검색 결과가 없을 때 AI API 호출
-      if (filteredResults.length === 0) {
+        // 검색 결과가 없을 때 AI API 호출
         console.log('No search results found, calling AI API...');
         try {
           const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
@@ -62,11 +52,15 @@ export const useSearchLogic = () => {
         } catch (error) {
           console.error('Error in AI search:', error);
         }
+        
+        setSearchResults([]);
       }
-      
-      setSearchResults(filteredResults);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 1500);
+    }
   };
 
   return {
