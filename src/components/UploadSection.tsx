@@ -1,0 +1,229 @@
+
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload, FileIcon, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+export const UploadSection = () => {
+  const [uploadData, setUploadData] = useState({
+    title: "",
+    department: "",
+    type: "",
+    description: "",
+    keywords: ""
+  });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const { toast } = useToast();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      return ['pdf', 'hwp', 'doc', 'docx'].includes(extension || '');
+    });
+    
+    if (validFiles.length !== files.length) {
+      toast({
+        title: "파일 형식 오류",
+        description: "PDF, HWP, DOC, DOCX 파일만 업로드할 수 있습니다.",
+        variant: "destructive"
+      });
+    }
+    
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = () => {
+    if (!uploadData.title || !uploadData.department || !uploadData.type || selectedFiles.length === 0) {
+      toast({
+        title: "필수 정보 누락",
+        description: "제목, 부서, 문서 유형, 파일을 모두 입력해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 시뮬레이션된 업로드
+    toast({
+      title: "업로드 완료",
+      description: `${selectedFiles.length}개 파일이 성공적으로 업로드되었습니다.`,
+    });
+
+    // 폼 초기화
+    setUploadData({
+      title: "",
+      department: "",
+      type: "",
+      description: "",
+      keywords: ""
+    });
+    setSelectedFiles([]);
+  };
+
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    return <FileIcon className="h-4 w-4" />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 업로드 폼 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            문서 업로드
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">문서 제목 *</Label>
+            <Input
+              id="title"
+              value={uploadData.title}
+              onChange={(e) => setUploadData({...uploadData, title: e.target.value})}
+              placeholder="예: 개인정보보호 관리지침"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="department">담당 부서 *</Label>
+              <Select value={uploadData.department} onValueChange={(value) => setUploadData({...uploadData, department: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="부서 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="security">정보보안팀</SelectItem>
+                  <SelectItem value="hr">인사팀</SelectItem>
+                  <SelectItem value="finance">기획재정부</SelectItem>
+                  <SelectItem value="legal">법무팀</SelectItem>
+                  <SelectItem value="admin">총무팀</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">문서 유형 *</Label>
+              <Select value={uploadData.type} onValueChange={(value) => setUploadData({...uploadData, type: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="유형 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="regulation">규정</SelectItem>
+                  <SelectItem value="guideline">지침</SelectItem>
+                  <SelectItem value="guide">가이드</SelectItem>
+                  <SelectItem value="manual">매뉴얼</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">문서 설명</Label>
+            <Textarea
+              id="description"
+              value={uploadData.description}
+              onChange={(e) => setUploadData({...uploadData, description: e.target.value})}
+              placeholder="문서에 대한 간단한 설명을 입력하세요"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="keywords">키워드</Label>
+            <Input
+              id="keywords"
+              value={uploadData.keywords}
+              onChange={(e) => setUploadData({...uploadData, keywords: e.target.value})}
+              placeholder="검색에 도움이 되는 키워드를 입력하세요 (쉼표로 구분)"
+            />
+          </div>
+
+          {/* 파일 선택 */}
+          <div className="space-y-2">
+            <Label>파일 선택 *</Label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.hwp,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600">
+                  클릭하여 파일을 선택하거나 드래그하여 업로드
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  PDF, HWP, DOC, DOCX 파일 지원
+                </p>
+              </label>
+            </div>
+          </div>
+
+          <Button onClick={handleUpload} className="w-full" size="lg">
+            업로드
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* 선택된 파일 목록 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>선택된 파일 ({selectedFiles.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {selectedFiles.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              선택된 파일이 없습니다
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {getFileIcon(file.name)}
+                    <div>
+                      <div className="font-medium text-sm">{file.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {formatFileSize(file.size)}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
