@@ -18,6 +18,7 @@ const Index = () => {
     showComparison,
     showHistory,
     selectedRegulation,
+    aiResponse,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -49,6 +50,7 @@ const Index = () => {
                     showComparison={showComparison}
                     showHistory={showHistory}
                     selectedRegulation={selectedRegulation}
+                    aiResponse={aiResponse}
                   />
                 </CardContent>
               </Card>

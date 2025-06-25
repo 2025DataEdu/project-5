@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { allMockResults } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -9,14 +10,16 @@ export const useSearchLogic = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedRegulation, setSelectedRegulation] = useState(null);
+  const [aiResponse, setAiResponse] = useState("");
 
   const handleSmartSearch = async (query: string, isNaturalLanguage: boolean) => {
     setIsSearching(true);
     setSearchQuery(query);
     setShowComparison(false);
     setShowHistory(false);
+    setAiResponse("");
 
-    setTimeout(() => {
+    setTimeout(async () => {
       let filteredResults;
       
       if (isNaturalLanguage) {
@@ -42,6 +45,25 @@ export const useSearchLogic = () => {
         );
       }
       
+      // 검색 결과가 없을 때 AI API 호출
+      if (filteredResults.length === 0) {
+        console.log('No search results found, calling AI API...');
+        try {
+          const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
+            body: { query }
+          });
+
+          if (error) {
+            console.error('Error calling AI function:', error);
+          } else if (data?.success) {
+            setAiResponse(data.response);
+            console.log('AI response received:', data.response);
+          }
+        } catch (error) {
+          console.error('Error in AI search:', error);
+        }
+      }
+      
       setSearchResults(filteredResults);
       setIsSearching(false);
     }, 1500);
@@ -54,6 +76,7 @@ export const useSearchLogic = () => {
     showComparison,
     showHistory,
     selectedRegulation,
+    aiResponse,
     handleSmartSearch
   };
 };
