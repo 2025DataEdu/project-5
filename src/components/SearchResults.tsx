@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,6 +62,10 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
         </mark>
       ) : part
     );
+  };
+
+  const handleViewOriginal = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {
@@ -160,7 +163,12 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
               </div>
               
               <div className="mt-4 flex justify-end">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => handleViewOriginal(result.url)}
+                >
                   <ExternalLink className="h-4 w-4" />
                   원문 보기
                 </Button>
