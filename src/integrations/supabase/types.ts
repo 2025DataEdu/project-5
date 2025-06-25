@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      pdf_documents: {
+        Row: {
+          content_text: string | null
+          department: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_url: string | null
+          id: string
+          page_count: number | null
+          status: string | null
+          title: string | null
+          upload_date: string
+        }
+        Insert: {
+          content_text?: string | null
+          department?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          page_count?: number | null
+          status?: string | null
+          title?: string | null
+          upload_date?: string
+        }
+        Update: {
+          content_text?: string | null
+          department?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          page_count?: number | null
+          status?: string | null
+          title?: string | null
+          upload_date?: string
+        }
+        Relationships: []
+      }
       결재문서목록: {
         Row: {
           id: number

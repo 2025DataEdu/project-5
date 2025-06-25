@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileIcon, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const UploadSection = () => {
   const [uploadData, setUploadData] = useState({
@@ -18,6 +19,7 @@ export const UploadSection = () => {
     keywords: ""
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +44,63 @@ export const UploadSection = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = () => {
+  const uploadFileToStorage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${uploadData.department}/${fileName}`;
+
+      console.log('Uploading file to path:', filePath);
+
+      const { data, error } = await supabase.storage
+        .from('pdf-documents')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Storage upload error:', error);
+        return null;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('pdf-documents')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('File upload error:', error);
+      return null;
+    }
+  };
+
+  const saveFileMetadata = async (file: File, fileUrl: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('pdf_documents')
+        .insert({
+          file_name: file.name,
+          file_path: fileUrl,
+          title: uploadData.title || file.name,
+          department: uploadData.department,
+          file_size: file.size,
+          file_url: fileUrl,
+          content_text: uploadData.description || `${uploadData.title} - ${uploadData.keywords}`, // 실제로는 PDF 텍스트 추출 필요
+          status: 'active'
+        });
+
+      if (error) {
+        console.error('Database insert error:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Metadata save error:', error);
+      throw error;
+    }
+  };
+
+  const handleUpload = async () => {
     if (!uploadData.title || !uploadData.department || !uploadData.type || selectedFiles.length === 0) {
       toast({
         title: "필수 정보 누락",
@@ -52,25 +110,67 @@ export const UploadSection = () => {
       return;
     }
 
-    // 시뮬레이션된 업로드
-    toast({
-      title: "업로드 완료",
-      description: `${selectedFiles.length}개 파일이 성공적으로 업로드되었습니다.`,
-    });
+    setIsUploading(true);
 
-    // 폼 초기화
-    setUploadData({
-      title: "",
-      department: "",
-      type: "",
-      description: "",
-      keywords: ""
-    });
-    setSelectedFiles([]);
+    try {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const file of selectedFiles) {
+        try {
+          // Upload file to storage
+          const fileUrl = await uploadFileToStorage(file);
+          
+          if (fileUrl) {
+            // Save metadata to database
+            await saveFileMetadata(file, fileUrl);
+            successCount++;
+            console.log(`Successfully uploaded: ${file.name}`);
+          } else {
+            failCount++;
+            console.error(`Failed to upload: ${file.name}`);
+          }
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "업로드 완료",
+          description: `${successCount}개 파일이 성공적으로 업로드되었습니다.${failCount > 0 ? ` (${failCount}개 파일 실패)` : ''}`,
+        });
+
+        // 폼 초기화
+        setUploadData({
+          title: "",
+          department: "",
+          type: "",
+          description: "",
+          keywords: ""
+        });
+        setSelectedFiles([]);
+      } else {
+        toast({
+          title: "업로드 실패",
+          description: "파일 업로드에 실패했습니다. 다시 시도해주세요.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Upload process error:', error);
+      toast({
+        title: "업로드 오류",
+        description: "업로드 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
     return <FileIcon className="h-4 w-4" />;
   };
 
@@ -181,8 +281,13 @@ export const UploadSection = () => {
             </div>
           </div>
 
-          <Button onClick={handleUpload} className="w-full" size="lg">
-            업로드
+          <Button 
+            onClick={handleUpload} 
+            className="w-full" 
+            size="lg"
+            disabled={isUploading}
+          >
+            {isUploading ? "업로드 중..." : "업로드"}
           </Button>
         </CardContent>
       </Card>
@@ -215,6 +320,7 @@ export const UploadSection = () => {
                     size="sm"
                     onClick={() => removeFile(index)}
                     className="text-red-500 hover:text-red-700"
+                    disabled={isUploading}
                   >
                     <X className="h-4 w-4" />
                   </Button>

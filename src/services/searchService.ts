@@ -51,6 +51,44 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
   }
 };
 
+export const searchPdfDocuments = async (query: string): Promise<SearchResult[]> => {
+  try {
+    console.log('Searching PDF documents with query:', query);
+    
+    // Search in pdf_documents table
+    const { data: pdfDocs, error: pdfError } = await supabase
+      .from('pdf_documents')
+      .select('*')
+      .or(`title.ilike.%${query}%,content_text.ilike.%${query}%,department.ilike.%${query}%,file_name.ilike.%${query}%`)
+      .eq('status', 'active')
+      .order('upload_date', { ascending: false })
+      .limit(10);
+
+    if (pdfError) {
+      console.error('Error searching PDF documents:', pdfError);
+      return [];
+    }
+
+    // Transform PDF documents to SearchResult format
+    const pdfResults: SearchResult[] = pdfDocs?.map(pdf => ({
+      id: parseInt(pdf.id) || 0,
+      title: pdf.title || pdf.file_name || '제목 없음',
+      content: pdf.content_text || `${pdf.title || pdf.file_name}에 대한 PDF 문서입니다.`,
+      source: "PDF문서",
+      department: pdf.department || '미분류',
+      lastModified: pdf.upload_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+      fileName: pdf.file_name,
+      type: "PDF문서",
+      url: pdf.file_url || '#'
+    })) || [];
+
+    return pdfResults;
+  } catch (error) {
+    console.error('PDF search error:', error);
+    return [];
+  }
+};
+
 export const searchEmployees = async (query: string): Promise<SearchResult[]> => {
   try {
     console.log('Searching employees with query:', query);
@@ -89,14 +127,15 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
 
 export const performSearch = async (query: string): Promise<SearchResult[]> => {
   try {
-    // Perform both searches in parallel
-    const [documentResults, employeeResults] = await Promise.all([
+    // Perform all searches in parallel
+    const [documentResults, pdfResults, employeeResults] = await Promise.all([
       searchDocuments(query),
+      searchPdfDocuments(query),
       searchEmployees(query)
     ]);
 
     // Combine and return results
-    const allResults = [...documentResults, ...employeeResults];
+    const allResults = [...documentResults, ...pdfResults, ...employeeResults];
     console.log('Search completed, found', allResults.length, 'results');
     
     return allResults;
