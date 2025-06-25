@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { FileIcon, Calendar, Building, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface SearchResult {
   id: number;
@@ -64,8 +65,26 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
     );
   };
 
-  const handleViewOriginal = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleViewOriginal = (url: string, fileName: string) => {
+    console.log('Attempting to open URL:', url);
+    
+    if (!url || url === '' || url === '#' || url === 'undefined') {
+      toast.error(`죄송합니다. ${fileName}의 원문 링크가 현재 사용할 수 없습니다.`);
+      return;
+    }
+
+    // URL이 http로 시작하지 않으면 https를 추가
+    let finalUrl = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      finalUrl = `https://${url}`;
+    }
+
+    try {
+      window.open(finalUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error opening URL:', error);
+      toast.error(`원문 링크를 열 수 없습니다. URL: ${finalUrl}`);
+    }
   };
 
   if (isLoading) {
@@ -167,7 +186,7 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
                   variant="outline" 
                   size="sm" 
                   className="gap-2"
-                  onClick={() => handleViewOriginal(result.url)}
+                  onClick={() => handleViewOriginal(result.url, result.fileName)}
                 >
                   <ExternalLink className="h-4 w-4" />
                   원문 보기
