@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logSearch } from "./analyticsService";
 
 export interface SearchResult {
-  id: string; // bigint를 문자열로 처리
+  id: string;
   title: string;
   content: string;
   source: string;
@@ -18,20 +18,25 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching documents with query:', query);
     
-    // Search in 결재문서목록 table with improved conditions
+    // 결재문서목록 테이블에서 검색 - 더 관대한 조건으로 수정
     const { data: documents, error: docsError } = await supabase
       .from('결재문서목록')
       .select('*')
       .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%`)
-      .filter('공개여부', 'ilike', '%공개%') // 공백, 대소문자 무시하고 '공개' 검색
+      .ilike('공개여부', '%공개%') // 공개여부에 '공개'가 포함된 모든 항목
       .order('생성일자', { ascending: false })
-      .limit(10);
+      .limit(20);
 
-    console.log('📄 Documents query result:', { documents, error: docsError, queryUsed: query });
+    console.log('📄 Documents query result:', { 
+      documents, 
+      error: docsError, 
+      queryUsed: query,
+      documentsCount: documents?.length || 0 
+    });
 
     if (docsError) {
       console.error('❌ Error searching documents:', docsError);
-      throw new Error(`결재문서 검색 중 오류: ${docsError.message}`);
+      throw new Error(`결재문서 검색 오류: ${docsError.message}`);
     }
 
     if (!documents || documents.length === 0) {
@@ -39,11 +44,11 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
       return [];
     }
 
-    // Transform documents to SearchResult format
+    // 문서 결과를 SearchResult 형태로 변환
     const documentResults: SearchResult[] = documents.map(doc => {
       console.log('🔄 Transforming document:', doc);
       return {
-        id: doc.id?.toString() || '0', // bigint를 문자열로 변환
+        id: doc.id?.toString() || Math.random().toString(),
         title: doc.제목 || '제목 없음',
         content: `${doc.제목 || ''} - ${doc.전체부서명 || ''}에서 작성된 결재문서입니다.`,
         source: "내부문서",
@@ -67,20 +72,25 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
   try {
     console.log('🔍 Searching PDF documents with query:', query);
     
-    // Search in pdf_documents table with fuzzy matching
+    // PDF 문서 테이블에서 검색
     const { data: pdfDocs, error: pdfError } = await supabase
       .from('pdf_documents')
       .select('*')
       .or(`title.ilike.%${query}%,content_text.ilike.%${query}%,department.ilike.%${query}%,file_name.ilike.%${query}%`)
       .eq('status', 'active')
       .order('upload_date', { ascending: false })
-      .limit(10);
+      .limit(20);
 
-    console.log('📁 PDF documents query result:', { pdfDocs, error: pdfError, queryUsed: query });
+    console.log('📁 PDF documents query result:', { 
+      pdfDocs, 
+      error: pdfError, 
+      queryUsed: query,
+      pdfDocsCount: pdfDocs?.length || 0 
+    });
 
     if (pdfError) {
       console.error('❌ Error searching PDF documents:', pdfError);
-      throw new Error(`PDF문서 검색 중 오류: ${pdfError.message}`);
+      throw new Error(`PDF문서 검색 오류: ${pdfError.message}`);
     }
 
     if (!pdfDocs || pdfDocs.length === 0) {
@@ -88,11 +98,11 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
       return [];
     }
 
-    // Transform PDF documents to SearchResult format
+    // PDF 문서 결과를 SearchResult 형태로 변환
     const pdfResults: SearchResult[] = pdfDocs.map(pdf => {
       console.log('🔄 Transforming PDF document:', pdf);
       return {
-        id: pdf.id || Math.floor(Math.random() * 1000000).toString(),
+        id: pdf.id || Math.random().toString(),
         title: pdf.title || pdf.file_name || '제목 없음',
         content: pdf.content_text || `${pdf.title || pdf.file_name}에 대한 PDF 문서입니다.`,
         source: "PDF문서",
@@ -116,18 +126,23 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching employees with query:', query);
     
-    // Search in 직원정보 table with fuzzy matching
+    // 직원정보 테이블에서 검색
     const { data: employees, error: empError } = await supabase
       .from('직원정보')
       .select('*')
       .or(`담당업무.ilike.%${query}%,부서명.ilike.%${query}%,직책.ilike.%${query}%`)
-      .limit(5);
+      .limit(10);
 
-    console.log('👥 Employees query result:', { employees, error: empError, queryUsed: query });
+    console.log('👥 Employees query result:', { 
+      employees, 
+      error: empError, 
+      queryUsed: query,
+      employeesCount: employees?.length || 0 
+    });
 
     if (empError) {
       console.error('❌ Error searching employees:', empError);
-      throw new Error(`직원정보 검색 중 오류: ${empError.message}`);
+      throw new Error(`직원정보 검색 오류: ${empError.message}`);
     }
 
     if (!employees || employees.length === 0) {
@@ -135,11 +150,11 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
       return [];
     }
 
-    // Transform employees to SearchResult format
+    // 직원정보 결과를 SearchResult 형태로 변환
     const employeeResults: SearchResult[] = employees.map(emp => {
       console.log('🔄 Transforming employee:', emp);
       return {
-        id: emp.id?.toString() || '0', // bigint를 문자열로 변환
+        id: emp.id?.toString() || Math.random().toString(),
         title: `${emp.직책 || '직책미상'} - ${emp.담당업무 || '업무미상'}`,
         content: `${emp.부서명 || ''}에서 ${emp.담당업무 || ''}를 담당하고 있습니다. 연락처: ${emp.전화번호 || '미등록'}`,
         source: "내부문서",
@@ -160,62 +175,60 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
 };
 
 export const performSearch = async (query: string): Promise<SearchResult[]> => {
-  const searchErrors: string[] = [];
+  console.log('🚀 Starting combined search for query:', query);
+  
   const searchResults: SearchResult[] = [];
+  const searchErrors: string[] = [];
+
+  // 각 검색을 순차적으로 실행하여 모든 결과를 수집
+  try {
+    const documentResults = await searchDocuments(query);
+    searchResults.push(...documentResults);
+    console.log(`📊 Documents found: ${documentResults.length}`);
+  } catch (error) {
+    const errorMsg = `결재문서 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
+    searchErrors.push(errorMsg);
+    console.error('📄 Document search failed:', error);
+  }
 
   try {
-    console.log('🚀 Starting combined search for query:', query);
-    
-    // 각 검색을 개별적으로 수행하여 부분 실패를 허용
-    try {
-      const documentResults = await searchDocuments(query);
-      searchResults.push(...documentResults);
-      console.log(`📊 Documents found: ${documentResults.length}`);
-    } catch (error) {
-      const errorMsg = `결재문서 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
-      searchErrors.push(errorMsg);
-      console.error('📄 Document search failed:', error);
-    }
-
-    try {
-      const pdfResults = await searchPdfDocuments(query);
-      searchResults.push(...pdfResults);
-      console.log(`📊 PDFs found: ${pdfResults.length}`);
-    } catch (error) {
-      const errorMsg = `PDF문서 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
-      searchErrors.push(errorMsg);
-      console.error('📁 PDF search failed:', error);
-    }
-
-    try {
-      const employeeResults = await searchEmployees(query);
-      searchResults.push(...employeeResults);
-      console.log(`📊 Employees found: ${employeeResults.length}`);
-    } catch (error) {
-      const errorMsg = `직원정보 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
-      searchErrors.push(errorMsg);
-      console.error('👥 Employee search failed:', error);
-    }
-
-    console.log('📊 Search results summary:', {
-      totalResults: searchResults.length,
-      errors: searchErrors.length,
-      searchErrors
-    });
-
-    // 검색 로그 기록
-    await logSearch(query, searchResults.length);
-    
-    // 에러가 있었다면 throw하여 상위에서 처리할 수 있도록 함
-    if (searchErrors.length > 0 && searchResults.length === 0) {
-      throw new Error(`모든 검색 소스에서 실패: ${searchErrors.join(', ')}`);
-    } else if (searchErrors.length > 0) {
-      console.warn('⚠️ 일부 검색 소스에서 실패:', searchErrors);
-    }
-    
-    return searchResults;
+    const pdfResults = await searchPdfDocuments(query);
+    searchResults.push(...pdfResults);
+    console.log(`📊 PDFs found: ${pdfResults.length}`);
   } catch (error) {
-    console.error('💥 Combined search error:', error);
-    throw error;
+    const errorMsg = `PDF문서 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
+    searchErrors.push(errorMsg);
+    console.error('📁 PDF search failed:', error);
   }
+
+  try {
+    const employeeResults = await searchEmployees(query);
+    searchResults.push(...employeeResults);
+    console.log(`📊 Employees found: ${employeeResults.length}`);
+  } catch (error) {
+    const errorMsg = `직원정보 검색 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
+    searchErrors.push(errorMsg);
+    console.error('👥 Employee search failed:', error);
+  }
+
+  console.log('📊 Search results summary:', {
+    totalResults: searchResults.length,
+    errors: searchErrors.length,
+    searchErrors,
+    resultsByType: {
+      documents: searchResults.filter(r => r.type === '결재문서').length,
+      pdfs: searchResults.filter(r => r.type === 'PDF문서').length,
+      employees: searchResults.filter(r => r.type === '직원정보').length
+    }
+  });
+
+  // 검색 로그 기록
+  await logSearch(query, searchResults.length);
+  
+  // 모든 검색에서 실패했고 결과가 없는 경우에만 에러 발생
+  if (searchErrors.length > 0 && searchResults.length === 0) {
+    throw new Error(`검색 실패: ${searchErrors.join(', ')}`);
+  }
+  
+  return searchResults;
 };
