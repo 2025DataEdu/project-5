@@ -90,7 +90,11 @@ export const useSearchLogic = () => {
         // 성공 시 폭죽 이펙트
         setShowConfetti(true);
       } else {
-        // 5단계: 결과가 없을 때만 AI API 호출
+        // 5단계: 결과가 0개일 때 화려한 폭탄 이펙트 추가!
+        console.log('💥 No search results found - showing spectacular bomb effect!');
+        setShowBomb(true);
+        
+        // 6단계: 결과가 없을 때만 AI API 호출
         console.log('❌ No search results found, trying AI API...');
         try {
           console.log('🤖 Calling AI regulation search function...');
@@ -101,23 +105,20 @@ export const useSearchLogic = () => {
           if (error) {
             console.error('❌ AI function error:', error);
             setSearchError(`AI 검색 중 오류가 발생했습니다: ${error.message}`);
-            // AI 검색 실패 시 폭탄 이펙트
-            setShowBomb(true);
+            // AI 검색 실패 시 폭탄 이펙트는 이미 위에서 설정됨
           } else if (data?.success) {
             console.log('✅ AI response received:', data.response);
             setAiResponse(data.response);
-            // AI 응답 시에는 이펙트 없음
+            // AI 응답 시에는 폭탄 이펙트가 이미 표시되었으므로 추가 이펙트 없음
           } else {
             console.log('⚠️ AI response received but no success flag:', data);
             setSearchError('AI에서 응답을 받지 못했습니다.');
-            // AI 응답 실패 시 폭탄 이펙트
-            setShowBomb(true);
+            // AI 응답 실패 시 폭탄 이펙트는 이미 위에서 설정됨
           }
         } catch (aiError) {
           console.error('💥 Error in AI search:', aiError);
           setSearchError(`AI 검색 서비스에 연결할 수 없습니다: ${aiError instanceof Error ? aiError.message : '알 수 없는 오류'}`);
-          // AI 검색 연결 실패 시 폭탄 이펙트
-          setShowBomb(true);
+          // AI 검색 연결 실패 시 폭탄 이펙트는 이미 위에서 설정됨
         }
         setSearchResults([]);
       }
