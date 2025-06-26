@@ -122,10 +122,7 @@ const Index = () => {
         show={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
       />
-      /***<BombEffect 
-        show={showBomb} 
-        onComplete={() => setShowBomb(false)} 
-      />***/
+      
     </div>
   );
 };
