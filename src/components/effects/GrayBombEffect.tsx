@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Bomb } from 'lucide-react';
 
 interface GrayBombEffectProps {
   show: boolean;
@@ -8,17 +9,28 @@ interface GrayBombEffectProps {
 
 export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isExploded, setIsExploded] = useState(false);
 
   useEffect(() => {
     if (show) {
       setIsVisible(true);
-      // 3초 후 이펙트 완료
-      const timer = setTimeout(() => {
+      
+      // 1초 후 폭발
+      const explodeTimer = setTimeout(() => {
+        setIsExploded(true);
+      }, 1000);
+      
+      // 4초 후 이펙트 완료
+      const completeTimer = setTimeout(() => {
         setIsVisible(false);
+        setIsExploded(false);
         onComplete?.();
-      }, 3000);
+      }, 4000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(explodeTimer);
+        clearTimeout(completeTimer);
+      };
     }
   }, [show, onComplete]);
 
@@ -29,76 +41,153 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
       {/* CSS 애니메이션 정의 */}
       <style>
         {`
-          @keyframes grayWave {
+          @keyframes bombPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+          }
+
+          @keyframes bombExplode {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+          }
+
+          @keyframes smokeRise {
             0% {
-              opacity: 0.8;
-              transform: translate(-50%, -50%) scale(0);
+              opacity: 0.7;
+              transform: translateY(0) scale(0.5);
             }
             50% {
-              opacity: 0.4;
+              opacity: 0.5;
+              transform: translateY(-100px) scale(1);
             }
             100% {
               opacity: 0;
-              transform: translate(-50%, -50%) scale(1);
+              transform: translateY(-200px) scale(1.5);
             }
           }
 
-          @keyframes graySmoke {
+          @keyframes smokeSpread {
             0% {
               opacity: 0.6;
-              transform: scale(0) translateY(0);
+              transform: scale(0);
             }
             50% {
-              opacity: 0.3;
-              transform: scale(1) translateY(-20px);
+              opacity: 0.4;
+              transform: scale(1);
             }
             100% {
               opacity: 0;
-              transform: scale(1.5) translateY(-60px);
+              transform: scale(2.5);
             }
+          }
+
+          @keyframes flashEffect {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; }
+            20% { opacity: 0; }
+            100% { opacity: 0; }
           }
         `}
       </style>
       
-      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-        {/* 중앙에서 퍼지는 회색 원들 */}
-        {Array.from({ length: 8 }).map((_, i) => {
-          const size = (i + 1) * 150;
-          const delay = i * 0.2;
-          
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center">
+        {/* 폭발 플래시 효과 */}
+        {isExploded && (
+          <div 
+            className="absolute inset-0 bg-gray-300"
+            style={{
+              animation: 'flashEffect 0.5s ease-out'
+            }}
+          />
+        )}
+
+        {/* 폭탄 아이콘 (폭발 전) */}
+        {!isExploded && (
+          <div
+            style={{
+              animation: 'bombPulse 0.5s ease-in-out infinite'
+            }}
+          >
+            <Bomb className="h-16 w-16 text-gray-600" />
+          </div>
+        )}
+
+        {/* 폭발 효과 */}
+        {isExploded && (
+          <div
+            className="absolute h-16 w-16 bg-gray-500 rounded-full"
+            style={{
+              animation: 'bombExplode 0.3s ease-out'
+            }}
+          />
+        )}
+
+        {/* 자욱한 연기 효과들 */}
+        {isExploded && Array.from({ length: 25 }).map((_, i) => {
+          const size = 60 + Math.random() * 120;
+          const left = 50 + (Math.random() - 0.5) * 100;
+          const top = 50 + (Math.random() - 0.5) * 80;
+          const delay = i * 0.1;
+          const duration = 3 + Math.random() * 2;
+
           return (
             <div
-              key={`gray-wave-${i}`}
-              className="absolute border-4 border-gray-400/30 rounded-full"
+              key={`smoke-${i}`}
+              className="absolute rounded-full bg-gray-400/30"
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                animation: `grayWave 2s ease-out ${delay}s forwards`,
+                left: `${left}%`,
+                top: `${top}%`,
+                animation: `smokeRise ${duration}s ease-out ${delay}s forwards`,
               }}
             />
           );
         })}
 
-        {/* 회색 연기 파티클들 */}
-        {Array.from({ length: 20 }).map((_, i) => {
-          const size = 30 + Math.random() * 60;
-          const left = 50 + (Math.random() - 0.5) * 80;
-          const top = 50 + (Math.random() - 0.5) * 60;
-          const delay = i * 0.1;
+        {/* 넓게 퍼지는 연기 구름들 */}
+        {isExploded && Array.from({ length: 8 }).map((_, i) => {
+          const size = 150 + i * 80;
+          const delay = i * 0.2;
+          const angle = (i * 45) * Math.PI / 180;
+          const distance = 100 + i * 30;
+          const left = 50 + Math.cos(angle) * (distance / 10);
+          const top = 50 + Math.sin(angle) * (distance / 10);
 
           return (
             <div
-              key={`gray-smoke-${i}`}
+              key={`spread-smoke-${i}`}
               className="absolute rounded-full bg-gray-500/20"
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
                 left: `${left}%`,
                 top: `${top}%`,
-                animation: `graySmoke 3s ease-out ${delay}s forwards`,
+                transform: 'translate(-50%, -50%)',
+                animation: `smokeSpread 3s ease-out ${delay}s forwards`,
+              }}
+            />
+          );
+        })}
+
+        {/* 중앙에서 퍼지는 진한 연기 */}
+        {isExploded && Array.from({ length: 15 }).map((_, i) => {
+          const size = 80 + Math.random() * 100;
+          const delay = i * 0.05;
+          const offsetX = (Math.random() - 0.5) * 200;
+          const offsetY = (Math.random() - 0.5) * 150;
+
+          return (
+            <div
+              key={`dense-smoke-${i}`}
+              className="absolute rounded-full bg-gray-600/25"
+              style={{
+                width: `${size}px`,
+                height: `${size}px`,
+                left: '50%',
+                top: '50%',
+                transform: `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`,
+                animation: `smokeSpread 4s ease-out ${delay}s forwards`,
               }}
             />
           );
