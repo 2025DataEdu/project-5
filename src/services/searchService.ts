@@ -31,7 +31,7 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
       .select('*')
       .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%,제목.ilike.%${searchTerms[0]}%`)
       .order('생성일자', { ascending: false })
-      .limit(50); // 30에서 50으로 증가
+      .limit(30); // 30개로 제한
 
     console.log('📄 Documents query result:', { 
       documents, 
@@ -54,7 +54,7 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
         .select('*')
         .not('제목', 'is', null)
         .order('생성일자', { ascending: false })
-        .limit(20); // 10에서 20으로 증가
+        .limit(15); // 15개로 제한
       
       if (broadError) {
         console.error('❌ Broad search error:', broadError);
@@ -122,7 +122,7 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
       .or(`title.ilike.%${query}%,content_text.ilike.%${query}%,department.ilike.%${query}%,file_name.ilike.%${query}%`)
       .eq('status', 'active')
       .order('upload_date', { ascending: false })
-      .limit(50); // 30에서 50으로 증가
+      .limit(30); // 30개로 제한
 
     console.log('📁 PDF documents query result:', { 
       pdfDocs, 
@@ -174,7 +174,7 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
       .from('직원정보')
       .select('*')
       .or(`담당업무.ilike.%${query}%,부서명.ilike.%${query}%,직책.ilike.%${query}%`)
-      .limit(25); // 15에서 25로 증가
+      .limit(15); // 15개로 제한
 
     console.log('👥 Employees query result:', { 
       employees, 
