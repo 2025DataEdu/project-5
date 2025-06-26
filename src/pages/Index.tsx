@@ -1,3 +1,4 @@
+
 import { SmartSearchBox } from "@/components/SmartSearchBox";
 import { SearchTabContent } from "@/components/SearchTabContent";
 import { PopularTabContent } from "@/components/PopularTabContent";
@@ -5,6 +6,8 @@ import { ManageTabContent } from "@/components/ManageTabContent";
 import { UploadSection } from "@/components/UploadSection";
 import { StatsSection } from "@/components/StatsSection";
 import { PageHeader } from "@/components/PageHeader";
+import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
+import { BombEffect } from "@/components/effects/BombEffect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSearchLogic } from "@/hooks/useSearchLogic";
@@ -19,6 +22,10 @@ const Index = () => {
     selectedRegulation,
     aiResponse,
     searchError,
+    showConfetti,
+    showBomb,
+    setShowConfetti,
+    setShowBomb,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -107,6 +114,16 @@ const Index = () => {
           <StatsSection />
         </div>
       </div>
+
+      {/* 이펙트 컴포넌트들 */}
+      <ConfettiEffect 
+        show={showConfetti} 
+        onComplete={() => setShowConfetti(false)} 
+      />
+      <BombEffect 
+        show={showBomb} 
+        onComplete={() => setShowBomb(false)} 
+      />
     </div>
   );
 };

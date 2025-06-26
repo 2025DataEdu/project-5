@@ -14,6 +14,8 @@ export const useSearchLogic = () => {
   const [selectedRegulation, setSelectedRegulation] = useState(null);
   const [aiResponse, setAiResponse] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showBomb, setShowBomb] = useState(false);
 
   const handleSmartSearch = async (query: string) => {
     console.log('🎯 Starting enhanced smart search for:', query);
@@ -23,6 +25,8 @@ export const useSearchLogic = () => {
     setShowHistory(false);
     setAiResponse("");
     setSearchError(null);
+    setShowConfetti(false);
+    setShowBomb(false);
 
     try {
       // 디버깅: 데이터베이스 내용 확인
@@ -73,6 +77,8 @@ export const useSearchLogic = () => {
         setShowComparison(true);
         setShowHistory(true);
         setSearchResults(combinedResults);
+        // 성공 시 폭죽 이펙트
+        setShowConfetti(true);
       } else {
         // 5단계: 결과가 없을 때만 AI API 호출
         console.log('❌ No search results found, trying AI API...');
@@ -85,16 +91,23 @@ export const useSearchLogic = () => {
           if (error) {
             console.error('❌ AI function error:', error);
             setSearchError(`AI 검색 중 오류가 발생했습니다: ${error.message}`);
+            // 실패 시 폭탄 이펙트
+            setShowBomb(true);
           } else if (data?.success) {
             console.log('✅ AI response received:', data.response);
             setAiResponse(data.response);
+            // AI 응답 시에는 이펙트 없음
           } else {
             console.log('⚠️ AI response received but no success flag:', data);
             setSearchError('AI에서 응답을 받지 못했습니다.');
+            // 실패 시 폭탄 이펙트
+            setShowBomb(true);
           }
         } catch (aiError) {
           console.error('💥 Error in AI search:', aiError);
           setSearchError(`AI 검색 서비스에 연결할 수 없습니다: ${aiError instanceof Error ? aiError.message : '알 수 없는 오류'}`);
+          // 실패 시 폭탄 이펙트
+          setShowBomb(true);
         }
         setSearchResults([]);
       }
@@ -104,6 +117,8 @@ export const useSearchLogic = () => {
       
       setSearchError(`"${query}" 검색 실패: ${errorMessage}`);
       setSearchResults([]);
+      // 실패 시 폭탄 이펙트
+      setShowBomb(true);
     } finally {
       setIsSearching(false);
       console.log('🏁 Enhanced search process completed');
@@ -119,6 +134,10 @@ export const useSearchLogic = () => {
     selectedRegulation,
     aiResponse,
     searchError,
+    showConfetti,
+    showBomb,
+    setShowConfetti,
+    setShowBomb,
     handleSmartSearch
   };
 };
