@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performSearch, SearchResult } from "@/services/searchService";
-import { allMockResults } from "@/data/mockData";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,44 +19,24 @@ export const useSearchLogic = () => {
     setShowHistory(false);
     setAiResponse("");
 
-    setTimeout(async () => {
-      const loweredQuery = query.toLowerCase();
+    try {
+      // 실제 데이터베이스에서 검색 수행
+      console.log("데이터베이스에서 검색 중:", query);
+      const databaseResults = await performSearch(query);
       
-      // 통합 검색: 키워드 기반 + 자연어 키워드 매칭
-      const naturalLanguageKeywords = ["출장", "교육", "절차", "서류", "신청", "예산", "집행"];
-      
-      const filteredResults = allMockResults.filter(result => {
-        const combinedContent = (result.title + result.content).toLowerCase();
-        
-        // 1. 직접 키워드 매칭
-        const directMatch = combinedContent.includes(loweredQuery);
-        
-        // 2. 자연어 키워드 매칭
-        const naturalMatch = naturalLanguageKeywords.some(keyword =>
-          combinedContent.includes(keyword) && (
-            query.includes(keyword) || 
-            query.includes('?') || 
-            query.includes('어떻게') || 
-            query.includes('무엇')
-          )
-        );
-        
-        return directMatch || naturalMatch;
-      });
-
-      // 결과 확인용 로그
       console.log("검색어:", query);
-      console.log("검색 결과 개수:", filteredResults.length);
-      console.log("검색 결과:", filteredResults);
+      console.log("데이터베이스 검색 결과 개수:", databaseResults.length);
+      console.log("검색 결과:", databaseResults);
 
-      // 결과가 있으면 비교 및 히스토리 표시
-      if (filteredResults.length > 0) {
-        setSelectedRegulation(filteredResults[0]);
+      // 데이터베이스에서 결과가 있으면 비교 및 히스토리 표시
+      if (databaseResults.length > 0) {
+        setSelectedRegulation(databaseResults[0]);
         setShowComparison(true);
         setShowHistory(true);
+        setSearchResults(databaseResults);
       } else {
-        // 검색 결과가 없을 때 AI API 호출
-        console.log('No search results found, calling AI API...');
+        // 데이터베이스에서 검색 결과가 없을 때만 AI API 호출
+        console.log('No database results found, calling AI API...');
         try {
           const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
             body: { query }
@@ -72,11 +51,14 @@ export const useSearchLogic = () => {
         } catch (error) {
           console.error('Error in AI search:', error);
         }
+        setSearchResults([]);
       }
-
-      setSearchResults(filteredResults);
+    } catch (error) {
+      console.error('Error in database search:', error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 1500);
+    }
   };
 
   return {
