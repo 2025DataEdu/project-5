@@ -25,29 +25,15 @@ export const StatsSection = () => {
       try {
         console.log('📊 Fetching real statistics from Supabase...');
         
-        // 먼저 데이터베이스 연결 테스트
-        const { data: testData, error: testError } = await supabase
+        // 1. 총 문서 수 (결재문서목록 테이블에서 정확한 행 수 조회)
+        console.log('📄 Fetching total documents from 결재문서목록...');
+        const { count: totalDocs, error: docsError } = await supabase
           .from('결재문서목록')
-          .select('*')
-          .limit(1);
+          .select('*', { count: 'exact', head: true });
 
-        console.log('🔍 Database connection test:', {
-          testData,
-          testError,
-          hasData: testData && testData.length > 0
-        });
-
-        // 1. 총 문서 수 (결재문서목록 테이블) - 더 자세한 로깅
-        console.log('📄 Fetching total documents...');
-        const { count: totalDocs, error: docsError, data: docsData } = await supabase
-          .from('결재문서목록')
-          .select('*', { count: 'exact' });
-
-        console.log('📊 Total documents query result:', {
+        console.log('📊 Total documents result:', {
           count: totalDocs,
-          error: docsError,
-          dataLength: docsData?.length,
-          sampleData: docsData?.slice(0, 3)
+          error: docsError
         });
 
         if (docsError) {
@@ -62,9 +48,8 @@ export const StatsSection = () => {
           .not('전체부서명', 'is', null);
 
         console.log('📊 Departments query result:', {
-          deptData,
-          deptError,
-          dataLength: deptData?.length
+          dataLength: deptData?.length,
+          error: deptError
         });
 
         if (deptError) {
