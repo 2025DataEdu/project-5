@@ -1,4 +1,3 @@
-
 import { SmartSearchBox } from "@/components/SmartSearchBox";
 import { SearchTabContent } from "@/components/SearchTabContent";
 import { PopularTabContent } from "@/components/PopularTabContent";
@@ -48,34 +47,34 @@ const Index = () => {
         {/* 검색 결과 탭 */}
         <div className="mt-6">
           <Tabs defaultValue="search" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/90 backdrop-blur-sm border shadow-lg rounded-xl p-2">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-2xl p-1.5 h-16">
               <TabsTrigger 
                 value="search" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold rounded-xl px-6 py-4 text-base transition-all duration-300 hover:bg-blue-50 flex-1 min-w-0"
               >
                 검색 결과
               </TabsTrigger>
               <TabsTrigger 
                 value="popular"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
+                className="data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold rounded-xl px-6 py-4 text-base transition-all duration-300 hover:bg-green-50 flex-1 min-w-0"
               >
                 인기 규정
               </TabsTrigger>
               <TabsTrigger 
                 value="upload"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
+                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold rounded-xl px-6 py-4 text-base transition-all duration-300 hover:bg-orange-50 flex-1 min-w-0"
               >
                 문서 업로드
               </TabsTrigger>
               <TabsTrigger 
                 value="smart"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold rounded-xl px-6 py-4 text-base transition-all duration-300 hover:bg-purple-50 flex-1 min-w-0"
               >
                 임베딩 관리
               </TabsTrigger>
               <TabsTrigger 
                 value="manage"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
+                className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold rounded-xl px-6 py-4 text-base transition-all duration-300 hover:bg-indigo-50 flex-1 min-w-0"
               >
                 부서별 관리
               </TabsTrigger>
