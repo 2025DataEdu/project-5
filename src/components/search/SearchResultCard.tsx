@@ -6,7 +6,7 @@ import { SearchResult } from "@/services/searchService";
 import { logDocumentView } from "@/services/analyticsService";
 
 interface SearchResultCardProps {
-  result: SearchResult;
+  result: SearchResult & { similarity?: number }; // 유사도 점수 추가
   searchQuery?: string;
 }
 
@@ -41,6 +41,14 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
             <Badge variant="secondary" className="text-xs font-medium">
               {result.type}
             </Badge>
+            {result.similarity && (
+              <Badge 
+                variant={result.similarity > 0.8 ? "default" : "outline"}
+                className="text-xs font-medium"
+              >
+                {Math.round(result.similarity * 100)}% 유사
+              </Badge>
+            )}
             {result.url && result.url !== '#' && (
               <ExternalLink className="h-4 w-4 text-gray-400" />
             )}

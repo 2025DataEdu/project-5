@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performSearch, SearchResult } from "@/services/searchService";
 import { debugDatabaseContent } from "@/services/debugService";
+import { performSmartSearch } from "@/services/smartSearchService";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,7 +15,7 @@ export const useSearchLogic = () => {
   const [searchError, setSearchError] = useState<string | null>(null);
 
   const handleSmartSearch = async (query: string) => {
-    console.log('🎯 Starting smart search for:', query);
+    console.log('🎯 Starting enhanced smart search for:', query);
     setIsSearching(true);
     setSearchQuery(query);
     setShowComparison(false);
@@ -28,26 +28,53 @@ export const useSearchLogic = () => {
       console.log('🔍 Checking database content first...');
       await debugDatabaseContent();
       
-      // 실제 데이터베이스에서 검색 수행
-      console.log("🔍 Performing database search for:", query);
-      const databaseResults = await performSearch(query);
+      // 1단계: 벡터 유사도 검색 시도
+      console.log("🧠 Attempting smart vector search...");
+      let smartResults: SearchResult[] = [];
       
-      console.log("📊 Database search completed:", {
-        query,
-        resultsCount: databaseResults.length,
-        results: databaseResults
+      try {
+        smartResults = await performSmartSearch(query, {
+          threshold: 0.6, // 조금 더 관대한 임계값
+          limit: 15,
+          useVectorSearch: true
+        });
+        console.log(`🎯 Smart search results: ${smartResults.length} found`);
+      } catch (smartError) {
+        console.warn('⚠️ Smart search failed, continuing with traditional search:', smartError);
+      }
+
+      // 2단계: 기존 키워드 검색 수행
+      console.log("🔍 Performing traditional database search...");
+      const traditionalResults = await performSearch(query);
+      console.log(`📊 Traditional search results: ${traditionalResults.length} found`);
+
+      // 3단계: 결과 통합 및 중복 제거
+      const combinedResults = [...smartResults];
+      
+      // 기존 검색 결과에서 중복되지 않는 것들만 추가
+      traditionalResults.forEach(traditional => {
+        const isDuplicate = smartResults.some(smart => 
+          smart.id === traditional.id || 
+          smart.title === traditional.title
+        );
+        
+        if (!isDuplicate) {
+          combinedResults.push(traditional);
+        }
       });
 
-      // 데이터베이스에서 결과가 있으면 표시
-      if (databaseResults.length > 0) {
-        console.log('✅ Database results found, displaying results');
-        setSelectedRegulation(databaseResults[0]);
+      console.log(`🔗 Combined search results: ${combinedResults.length} total`);
+
+      // 4단계: 결과가 있으면 표시
+      if (combinedResults.length > 0) {
+        console.log('✅ Search results found, displaying results');
+        setSelectedRegulation(combinedResults[0]);
         setShowComparison(true);
         setShowHistory(true);
-        setSearchResults(databaseResults);
+        setSearchResults(combinedResults);
       } else {
-        // 데이터베이스에서 검색 결과가 없을 때만 AI API 호출
-        console.log('❌ No database results found, trying AI API...');
+        // 5단계: 결과가 없을 때만 AI API 호출
+        console.log('❌ No search results found, trying AI API...');
         try {
           console.log('🤖 Calling AI regulation search function...');
           const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
@@ -71,15 +98,14 @@ export const useSearchLogic = () => {
         setSearchResults([]);
       }
     } catch (error) {
-      console.error('💥 Error in database search:', error);
+      console.error('💥 Error in search process:', error);
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다';
       
-      // 구체적인 검색 실패 메시지 제공
       setSearchError(`"${query}" 검색 실패: ${errorMessage}`);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
-      console.log('🏁 Search process completed');
+      console.log('🏁 Enhanced search process completed');
     }
   };
 

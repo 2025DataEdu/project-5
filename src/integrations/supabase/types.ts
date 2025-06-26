@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      document_embeddings: {
+        Row: {
+          content_text: string | null
+          created_at: string
+          department: string | null
+          document_id: number
+          document_title: string
+          document_type: string
+          embedding: string | null
+          id: string
+          similarity_threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          content_text?: string | null
+          created_at?: string
+          department?: string | null
+          document_id: number
+          document_title: string
+          document_type?: string
+          embedding?: string | null
+          id?: string
+          similarity_threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          content_text?: string | null
+          created_at?: string
+          department?: string | null
+          document_id?: number
+          document_title?: string
+          document_type?: string
+          embedding?: string | null
+          id?: string
+          similarity_threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_views: {
         Row: {
           created_at: string
@@ -218,7 +257,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_similar_documents: {
+        Args: {
+          query_embedding: string
+          match_threshold?: number
+          match_count?: number
+        }
+        Returns: {
+          id: string
+          document_id: number
+          document_title: string
+          document_type: string
+          department: string
+          content_text: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
