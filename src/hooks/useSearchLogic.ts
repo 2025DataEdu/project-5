@@ -29,14 +29,14 @@ export const useSearchLogic = () => {
       console.log('🔍 Checking database content first...');
       await debugDatabaseContent();
       
-      // 1단계: 벡터 유사도 검색 시도
+      // 1단계: 벡터 유사도 검색 시도 - 임계값을 0.8로 상향
       console.log("🧠 Attempting smart vector search...");
       let smartResults: SearchResult[] = [];
       
       try {
         smartResults = await performSmartSearch(query, {
-          threshold: 0.6, // 조금 더 관대한 임계값
-          limit: 50, // 50개로 증가
+          threshold: 0.8, // 80% 이상으로 상향 조정
+          limit: 50,
           useVectorSearch: true
         });
         console.log(`🎯 Smart search results: ${smartResults.length} found`);

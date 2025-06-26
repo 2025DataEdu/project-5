@@ -16,7 +16,7 @@ serve(async (req) => {
   try {
     console.log('🎯 Starting smart search function');
     
-    const { query, threshold = 0.7, limit = 30 } = await req.json();
+    const { query, threshold = 0.8, limit = 30 } = await req.json(); // 기본 임계값을 0.8로 상향
     
     if (!query || typeof query !== 'string') {
       throw new Error('검색 쿼리가 필요합니다');
@@ -75,8 +75,11 @@ serve(async (req) => {
 
     console.log(`📊 Found ${similarDocs?.length || 0} similar documents`);
 
-    // 3. 결과를 SearchResult 형태로 변환
-    const searchResults = similarDocs?.map(doc => ({
+    // 3. 80% 이상 유사도만 필터링하고 결과를 SearchResult 형태로 변환
+    const filteredResults = similarDocs?.filter(doc => doc.similarity >= 0.8) || [];
+    console.log(`🎯 Filtered to ${filteredResults.length} results with 80%+ similarity`);
+
+    const searchResults = filteredResults.map(doc => ({
       id: doc.document_id.toString(),
       title: doc.document_title,
       content: doc.content_text || `${doc.document_title} - ${doc.department || ''}에서 작성된 결재문서입니다.`,
@@ -87,9 +90,9 @@ serve(async (req) => {
       type: doc.document_type,
       url: '#',
       similarity: Math.round(doc.similarity * 100) / 100 // 소수점 2자리로 반올림
-    })) || [];
+    }));
 
-    console.log(`🎯 Smart search completed: ${searchResults.length} results`);
+    console.log(`🎯 Smart search completed: ${searchResults.length} results with 80%+ similarity`);
 
     return new Response(JSON.stringify({ 
       success: true,

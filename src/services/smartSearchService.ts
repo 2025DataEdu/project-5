@@ -31,7 +31,7 @@ export const performSmartSearch = async (
   query: string, 
   options: SmartSearchOptions = {}
 ): Promise<SearchResult[]> => {
-  const { threshold = 0.7, limit = 10, useVectorSearch = true } = options;
+  const { threshold = 0.8, limit = 10, useVectorSearch = true } = options; // 기본 임계값을 0.8로 상향
   
   console.log('🎯 Starting smart search:', { query, threshold, limit, useVectorSearch });
   
