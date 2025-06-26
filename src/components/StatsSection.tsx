@@ -44,7 +44,9 @@ export const StatsSection = () => {
           console.error('Error fetching departments:', deptError);
         }
 
-        const uniqueDepartments = new Set(deptData?.map(item => item.전체부서명)).size;
+        const uniqueDepartments = new Set(
+          (deptData as any[])?.map((item: any) => item.전체부서명)
+        ).size;
 
         // 3. 이번 달 업데이트 (이번 달에 생성된 문서)
         const currentMonth = new Date();
