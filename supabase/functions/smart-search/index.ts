@@ -79,18 +79,23 @@ serve(async (req) => {
     const filteredResults = similarDocs?.filter(doc => doc.similarity >= 0.8) || [];
     console.log(`🎯 Filtered to ${filteredResults.length} results with 80%+ similarity`);
 
-    const searchResults = filteredResults.map(doc => ({
-      id: doc.document_id.toString(),
-      title: doc.document_title,
-      content: doc.content_text || `${doc.document_title} - ${doc.department || ''}에서 작성된 결재문서입니다.`,
-      source: "벡터검색",
-      department: doc.department || '미분류',
-      lastModified: new Date().toISOString().split('T')[0],
-      fileName: `${doc.document_title}.pdf`,
-      type: doc.document_type,
-      url: '#',
-      similarity: Math.round(doc.similarity * 100) / 100 // 소수점 2자리로 반올림
-    }));
+    const searchResults = filteredResults.map(doc => {
+      // document_id가 UUID인지 확인하여 적절한 ID 사용
+      const documentId = doc.document_id || doc.document_id_old?.toString() || 'unknown';
+      
+      return {
+        id: documentId,
+        title: doc.document_title,
+        content: doc.content_text || `${doc.document_title} - ${doc.department || ''}에서 작성된 ${doc.document_type}입니다.`,
+        source: "벡터검색",
+        department: doc.department || '미분류',
+        lastModified: new Date().toISOString().split('T')[0],
+        fileName: `${doc.document_title}.pdf`,
+        type: doc.document_type,
+        url: '#',
+        similarity: Math.round(doc.similarity * 100) / 100 // 소수점 2자리로 반올림
+      };
+    });
 
     console.log(`🎯 Smart search completed: ${searchResults.length} results with 80%+ similarity`);
 

@@ -34,12 +34,14 @@ serve(async (req) => {
 
     console.log(`📄 Total documents in database: ${totalCount}`);
 
-    // 이미 임베딩이 생성된 문서 ID들 가져오기
+    // 이미 임베딩이 생성된 문서 ID들 가져오기 (document_id_old 사용)
     const { data: existingEmbeddings } = await supabase
       .from('document_embeddings')
-      .select('document_id');
+      .select('document_id_old')
+      .eq('document_type', '결재문서')
+      .not('document_id_old', 'is', null);
 
-    const existingDocIds = new Set(existingEmbeddings?.map(e => e.document_id) || []);
+    const existingDocIds = new Set(existingEmbeddings?.map(e => e.document_id_old) || []);
     console.log(`✅ Existing embeddings: ${existingDocIds.size}`);
 
     // 임베딩이 없는 문서들만 가져오기 (더 큰 배치 크기)
@@ -118,11 +120,12 @@ serve(async (req) => {
             const embeddingData = await embeddingResponse.json();
             const embedding = embeddingData.data[0].embedding;
 
-            // 임베딩을 데이터베이스에 저장
+            // 임베딩을 데이터베이스에 저장 (기존 결재문서는 document_id_old에 저장)
             const { error: insertError } = await supabase
               .from('document_embeddings')
               .insert({
-                document_id: doc.id,
+                document_id_old: doc.id, // 기존 integer ID
+                document_id: null, // UUID는 null로 설정
                 document_title: doc.제목 || '제목 없음',
                 document_type: '결재문서',
                 department: doc.전체부서명,

@@ -35,11 +35,12 @@ serve(async (req) => {
 
     console.log(`📄 Total PDF documents: ${totalCount}`);
 
-    // 이미 임베딩이 생성된 PDF 문서 ID들 가져오기
+    // 이미 임베딩이 생성된 PDF 문서 ID들 가져오기 (UUID 타입)
     const { data: existingEmbeddings } = await supabase
       .from('document_embeddings')
       .select('document_id')
-      .eq('document_type', 'PDF문서');
+      .eq('document_type', 'PDF문서')
+      .not('document_id', 'is', null);
 
     const existingPdfIds = new Set(existingEmbeddings?.map(e => e.document_id) || []);
     console.log(`✅ Existing PDF embeddings: ${existingPdfIds.size}`);
@@ -73,7 +74,7 @@ serve(async (req) => {
 
       console.log(`📊 PDF Batch ${batchCount}: ${documents.length} documents fetched`);
 
-      // 이미 임베딩이 있는 문서 필터링
+      // 이미 임베딩이 있는 문서 필터링 (UUID 비교)
       const documentsToProcess = documents.filter(doc => !existingPdfIds.has(doc.id));
       console.log(`🔍 PDF Batch ${batchCount}: ${documentsToProcess.length} documents need embeddings`);
 
@@ -121,11 +122,11 @@ serve(async (req) => {
             const embeddingData = await embeddingResponse.json();
             const embedding = embeddingData.data[0].embedding;
 
-            // 임베딩을 데이터베이스에 저장
+            // 임베딩을 데이터베이스에 저장 (UUID 타입의 document_id 사용)
             const { error: insertError } = await supabase
               .from('document_embeddings')
               .insert({
-                document_id: doc.id,
+                document_id: doc.id, // UUID 타입으로 직접 저장
                 document_title: doc.title || doc.file_name || '제목 없음',
                 document_type: 'PDF문서',
                 department: doc.department,

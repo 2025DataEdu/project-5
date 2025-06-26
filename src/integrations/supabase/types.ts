@@ -14,7 +14,8 @@ export type Database = {
           content_text: string | null
           created_at: string
           department: string | null
-          document_id: number
+          document_id: string | null
+          document_id_old: number
           document_title: string
           document_type: string
           embedding: string | null
@@ -26,7 +27,8 @@ export type Database = {
           content_text?: string | null
           created_at?: string
           department?: string | null
-          document_id: number
+          document_id?: string | null
+          document_id_old: number
           document_title: string
           document_type?: string
           embedding?: string | null
@@ -38,7 +40,8 @@ export type Database = {
           content_text?: string | null
           created_at?: string
           department?: string | null
-          document_id?: number
+          document_id?: string | null
+          document_id_old?: number
           document_title?: string
           document_type?: string
           embedding?: string | null
@@ -265,7 +268,7 @@ export type Database = {
         }
         Returns: {
           id: string
-          document_id: number
+          document_id: string
           document_title: string
           document_type: string
           department: string
