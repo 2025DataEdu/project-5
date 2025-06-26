@@ -1,4 +1,3 @@
-
 import { SmartSearchBox } from "@/components/SmartSearchBox";
 import { SearchTabContent } from "@/components/SearchTabContent";
 import { PopularTabContent } from "@/components/PopularTabContent";
@@ -19,6 +18,7 @@ const Index = () => {
     showHistory,
     selectedRegulation,
     aiResponse,
+    searchError,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -70,6 +70,7 @@ const Index = () => {
                     showHistory={showHistory}
                     selectedRegulation={selectedRegulation}
                     aiResponse={aiResponse}
+                    searchError={searchError}
                   />
                 </CardContent>
               </Card>

@@ -15,6 +15,7 @@ interface SearchTabContentProps {
   showHistory: boolean;
   selectedRegulation: any;
   aiResponse: string;
+  searchError?: string | null;
 }
 
 export const SearchTabContent = ({
@@ -24,7 +25,8 @@ export const SearchTabContent = ({
   showComparison,
   showHistory,
   selectedRegulation,
-  aiResponse
+  aiResponse,
+  searchError
 }: SearchTabContentProps) => {
   if (!searchQuery) {
     return (
@@ -41,8 +43,18 @@ export const SearchTabContent = ({
 
   return (
     <div className="space-y-6">
+      {/* 검색 에러 표시 */}
+      {searchError && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            {searchError}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* AI 응답 표시 (검색 결과가 없을 때만) */}
-      {searchResults.length === 0 && aiResponse && !isSearching && (
+      {searchResults.length === 0 && aiResponse && !isSearching && !searchError && (
         <div className="space-y-4">
           {/* 안내 문구 */}
           <Alert className="border-amber-200 bg-amber-50">
