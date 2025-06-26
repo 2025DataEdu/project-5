@@ -109,10 +109,12 @@ const Index = () => {
           </Tabs>
         </div>
 
-        {/* 통계 섹션을 하단으로 이동 */}
-        <div className="mt-8">
-          <StatsSection />
-        </div>
+        {/* 통계 섹션 - 폭탄 이펙트가 표시될 때 숨김 */}
+        {!showBomb && (
+          <div className="mt-8">
+            <StatsSection />
+          </div>
+        )}
       </div>
 
       {/* 이펙트 컴포넌트들 */}
