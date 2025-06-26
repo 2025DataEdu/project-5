@@ -1,4 +1,3 @@
-
 import { SmartSearchBox } from "@/components/SmartSearchBox";
 import { SearchTabContent } from "@/components/SearchTabContent";
 import { PopularTabContent } from "@/components/PopularTabContent";
@@ -8,6 +7,7 @@ import { StatsSection } from "@/components/StatsSection";
 import { PageHeader } from "@/components/PageHeader";
 import { SmartSearchManager } from "@/components/SmartSearchManager";
 import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
+import { SubtleGrayBombEffect } from "@/components/effects/SubtleGrayBombEffect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSearchLogic } from "@/hooks/useSearchLogic";
@@ -23,7 +23,9 @@ const Index = () => {
     aiResponse,
     searchError,
     showConfetti,
+    showGrayBomb,
     setShowConfetti,
+    setShowGrayBomb,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -131,6 +133,10 @@ const Index = () => {
       <ConfettiEffect 
         show={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
+      />
+      <SubtleGrayBombEffect 
+        show={showGrayBomb} 
+        onComplete={() => setShowGrayBomb(false)} 
       />
     </div>
   );
