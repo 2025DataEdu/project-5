@@ -80,27 +80,10 @@ export const SubtleGrayBombEffect = ({ show, onComplete }: SubtleGrayBombEffectP
               transform: scale(1.5);
             }
           }
-
-          @keyframes subtleFlashEffect {
-            0% { opacity: 0; }
-            10% { opacity: 0.03; }
-            20% { opacity: 0; }
-            100% { opacity: 0; }
-          }
         `}
       </style>
       
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center">
-        {/* 폭발 플래시 효과 - 매우 연한 투명도 */}
-        {isExploded && (
-          <div 
-            className="absolute inset-0 bg-gray-400"
-            style={{
-              animation: 'subtleFlashEffect 0.3s ease-out'
-            }}
-          />
-        )}
-
         {/* 폭탄 아이콘 (폭발 전) */}
         {!isExploded && (
           <div
