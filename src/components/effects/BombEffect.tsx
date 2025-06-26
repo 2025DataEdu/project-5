@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Bomb, Zap, Star, Sparkles } from 'lucide-react';
 
@@ -15,34 +14,34 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
 
   useEffect(() => {
     if (show) {
-      // 1.5초 후 폭발
+      // 0.75초 후 폭발 (1.5초 → 0.75초)
       const explodeTimer = setTimeout(() => {
         setIsExploding(true);
-      }, 1500);
+      }, 750);
       
-      // 2초 후 충격파
+      // 1초 후 충격파 (2초 → 1초)
       const shockwaveTimer = setTimeout(() => {
         setShowShockwave(true);
-      }, 2000);
+      }, 1000);
       
-      // 2.5초 후 불꽃놀이
+      // 1.25초 후 불꽃놀이 (2.5초 → 1.25초)
       const fireworksTimer = setTimeout(() => {
         setShowFireworks(true);
-      }, 2500);
+      }, 1250);
       
-      // 3초 후 연기 효과
+      // 1.5초 후 연기 효과 (3초 → 1.5초)
       const smokeTimer = setTimeout(() => {
         setShowSmoke(true);
-      }, 3000);
+      }, 1500);
       
-      // 6초 후 이펙트 제거
+      // 3초 후 이펙트 제거 (6초 → 3초)
       const completeTimer = setTimeout(() => {
         setIsExploding(false);
         setShowShockwave(false);
         setShowFireworks(false);
         setShowSmoke(false);
         onComplete?.();
-      }, 6000);
+      }, 3000);
       
       return () => {
         clearTimeout(explodeTimer);
