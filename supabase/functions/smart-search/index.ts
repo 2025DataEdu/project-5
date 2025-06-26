@@ -16,7 +16,7 @@ serve(async (req) => {
   try {
     console.log('🎯 Starting smart search function');
     
-    const { query, threshold = 0.7, limit = 10 } = await req.json();
+    const { query, threshold = 0.7, limit = 30 } = await req.json();
     
     if (!query || typeof query !== 'string') {
       throw new Error('검색 쿼리가 필요합니다');

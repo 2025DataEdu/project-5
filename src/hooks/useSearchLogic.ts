@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performSearch, SearchResult } from "@/services/searchService";
@@ -35,7 +36,7 @@ export const useSearchLogic = () => {
       try {
         smartResults = await performSmartSearch(query, {
           threshold: 0.6, // 조금 더 관대한 임계값
-          limit: 15,
+          limit: 50, // 50개로 증가
           useVectorSearch: true
         });
         console.log(`🎯 Smart search results: ${smartResults.length} found`);
