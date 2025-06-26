@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { logSearch } from "./analyticsService";
 
@@ -18,12 +17,11 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching documents with query:', query);
     
-    // 결재문서목록 테이블에서 검색 - 더 관대한 조건으로 수정
+    // 결재문서목록 테이블에서 검색 - 공개여부 조건 제거
     const { data: documents, error: docsError } = await supabase
       .from('결재문서목록')
       .select('*')
       .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%`)
-      .ilike('공개여부', '%공개%') // 공개여부에 '공개'가 포함된 모든 항목
       .order('생성일자', { ascending: false })
       .limit(20);
 
