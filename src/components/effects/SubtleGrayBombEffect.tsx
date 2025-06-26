@@ -20,12 +20,12 @@ export const SubtleGrayBombEffect = ({ show, onComplete }: SubtleGrayBombEffectP
         setIsExploded(true);
       }, 1000);
       
-      // 3초 후 이펙트 완료 (시간 단축)
+      // 4초 후 이펙트 완료 (연기 효과를 위해 시간 증가)
       const completeTimer = setTimeout(() => {
         setIsVisible(false);
         setIsExploded(false);
         onComplete?.();
-      }, 3000);
+      }, 4000);
 
       return () => {
         clearTimeout(explodeTimer);
@@ -80,6 +80,21 @@ export const SubtleGrayBombEffect = ({ show, onComplete }: SubtleGrayBombEffectP
               transform: scale(1.5);
             }
           }
+
+          @keyframes smokeDrift {
+            0% {
+              opacity: 0.04;
+              transform: translateY(0) translateX(0) scale(0.4);
+            }
+            50% {
+              opacity: 0.025;
+              transform: translateY(-100px) translateX(20px) scale(0.8);
+            }
+            100% {
+              opacity: 0;
+              transform: translateY(-200px) translateX(40px) scale(1.2);
+            }
+          }
         `}
       </style>
       
@@ -104,6 +119,29 @@ export const SubtleGrayBombEffect = ({ show, onComplete }: SubtleGrayBombEffectP
             }}
           />
         )}
+
+        {/* 폭발 위치에서 올라오는 연기 효과들 */}
+        {isExploded && Array.from({ length: 8 }).map((_, i) => {
+          const size = 30 + Math.random() * 40;
+          const offsetX = (Math.random() - 0.5) * 40;
+          const delay = i * 0.2;
+          const duration = 2.5 + Math.random() * 1;
+
+          return (
+            <div
+              key={`center-smoke-${i}`}
+              className="absolute rounded-full bg-gray-500"
+              style={{
+                width: `${size}px`,
+                height: `${size}px`,
+                left: '50%',
+                top: '50%',
+                transform: `translate(calc(-50% + ${offsetX}px), -50%)`,
+                animation: `smokeDrift ${duration}s ease-out ${delay}s forwards`,
+              }}
+            />
+          );
+        })}
 
         {/* 매우 연한 연기 효과들 - 개수 줄임 */}
         {isExploded && Array.from({ length: 6 }).map((_, i) => {
