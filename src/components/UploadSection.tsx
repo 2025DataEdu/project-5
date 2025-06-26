@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,52 +49,88 @@ export const UploadSection = () => {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${uploadData.department}/${fileName}`;
 
-      console.log('Uploading file to path:', filePath);
+      console.log('🔄 파일 업로드 시작:', {
+        fileName: file.name,
+        filePath,
+        fileSize: file.size,
+        department: uploadData.department
+      });
 
       const { data, error } = await supabase.storage
         .from('pdf-documents')
         .upload(filePath, file);
 
       if (error) {
-        console.error('Storage upload error:', error);
+        console.error('❌ Storage 업로드 오류:', error);
+        toast({
+          title: "파일 업로드 실패",
+          description: `Storage 업로드 오류: ${error.message}`,
+          variant: "destructive"
+        });
         return null;
       }
+
+      console.log('✅ Storage 업로드 성공:', data);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('pdf-documents')
         .getPublicUrl(filePath);
 
+      console.log('📄 Public URL 생성:', publicUrl);
       return publicUrl;
     } catch (error) {
-      console.error('File upload error:', error);
+      console.error('💥 파일 업로드 예외:', error);
+      toast({
+        title: "파일 업로드 오류",
+        description: `업로드 중 예외 발생: ${error instanceof Error ? error.message : '알 수 없는 오류'}`,
+        variant: "destructive"
+      });
       return null;
     }
   };
 
   const saveFileMetadata = async (file: File, fileUrl: string) => {
     try {
+      const metaData = {
+        file_name: file.name,
+        file_path: fileUrl,
+        title: uploadData.title || file.name,
+        department: uploadData.department,
+        file_size: file.size,
+        file_url: fileUrl,
+        content_text: uploadData.description || `${uploadData.title} - ${uploadData.keywords}`,
+        status: 'active'
+      };
+
+      console.log('💾 데이터베이스 저장 시도:', metaData);
+
       const { data, error } = await supabase
         .from('pdf_documents')
-        .insert({
-          file_name: file.name,
-          file_path: fileUrl,
-          title: uploadData.title || file.name,
-          department: uploadData.department,
-          file_size: file.size,
-          file_url: fileUrl,
-          content_text: uploadData.description || `${uploadData.title} - ${uploadData.keywords}`, // 실제로는 PDF 텍스트 추출 필요
-          status: 'active'
-        });
+        .insert(metaData)
+        .select();
 
       if (error) {
-        console.error('Database insert error:', error);
+        console.error('❌ 데이터베이스 저장 오류:', {
+          error,
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        toast({
+          title: "메타데이터 저장 실패",
+          description: `DB 오류 (${error.code}): ${error.message}`,
+          variant: "destructive"
+        });
         throw error;
       }
 
+      console.log('✅ 데이터베이스 저장 성공:', data);
       return data;
     } catch (error) {
-      console.error('Metadata save error:', error);
+      console.error('💥 메타데이터 저장 예외:', error);
       throw error;
     }
   };
@@ -110,6 +145,11 @@ export const UploadSection = () => {
       return;
     }
 
+    console.log('🚀 업로드 프로세스 시작:', {
+      fileCount: selectedFiles.length,
+      uploadData
+    });
+
     setIsUploading(true);
 
     try {
@@ -118,6 +158,8 @@ export const UploadSection = () => {
 
       for (const file of selectedFiles) {
         try {
+          console.log(`📁 파일 처리 중: ${file.name}`);
+          
           // Upload file to storage
           const fileUrl = await uploadFileToStorage(file);
           
@@ -125,13 +167,13 @@ export const UploadSection = () => {
             // Save metadata to database
             await saveFileMetadata(file, fileUrl);
             successCount++;
-            console.log(`Successfully uploaded: ${file.name}`);
+            console.log(`✅ 파일 업로드 완료: ${file.name}`);
           } else {
             failCount++;
-            console.error(`Failed to upload: ${file.name}`);
+            console.error(`❌ 파일 업로드 실패: ${file.name}`);
           }
         } catch (error) {
-          console.error(`Error uploading ${file.name}:`, error);
+          console.error(`💥 파일 처리 중 오류 (${file.name}):`, error);
           failCount++;
         }
       }
@@ -154,15 +196,15 @@ export const UploadSection = () => {
       } else {
         toast({
           title: "업로드 실패",
-          description: "파일 업로드에 실패했습니다. 다시 시도해주세요.",
+          description: "모든 파일 업로드에 실패했습니다. 콘솔 로그를 확인해주세요.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error('Upload process error:', error);
+      console.error('💥 업로드 프로세스 오류:', error);
       toast({
         title: "업로드 오류",
-        description: "업로드 중 오류가 발생했습니다.",
+        description: "업로드 중 예상치 못한 오류가 발생했습니다.",
         variant: "destructive"
       });
     } finally {
