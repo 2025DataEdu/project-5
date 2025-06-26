@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Building, FileText, ExternalLink, Download, Eye } from "lucide-react";
 import { SearchResult } from "@/services/searchService";
 import { logDocumentView } from "@/services/analyticsService";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface SearchResultCardProps {
-  result: SearchResult & { similarity?: number }; // 유사도 점수 추가
+  result: SearchResult & { similarity?: number };
   searchQuery?: string;
 }
 
@@ -17,7 +16,7 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
   const { toast } = useToast();
 
   const handleCardClick = async () => {
-    // 문서 조회 로그 기록 (ID는 이미 문자열로 처리됨)
+    // 문서 조회 로그 기록
     await logDocumentView(
       result.id,
       result.type,
@@ -33,14 +32,19 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
     // 문서 조회 로그 기록
     await handleCardClick();
     
-    // PDF 문서인 경우 실제 파일 URL로 열기
+    // PDF 문서이고 실제 URL이 있는 경우
     if (result.type === 'PDF문서' && result.url && result.url !== '#') {
       window.open(result.url, '_blank');
-    } else {
-      // 다른 문서 타입의 경우 정보 표시
       toast({
-        title: "문서 보기",
-        description: `${result.title} - 파일을 미리볼 수 없습니다. 담당부서(${result.department})에 문의하세요.`,
+        title: "문서 열기",
+        description: `${result.title} 문서를 새 탭에서 열었습니다.`,
+      });
+    } else {
+      // 다른 문서 타입이거나 URL이 없는 경우
+      toast({
+        title: "문서 보기 제한",
+        description: `${result.title} - 이 문서는 온라인으로 미리볼 수 없습니다. 담당부서(${result.department})에 직접 문의하세요.`,
+        variant: "destructive",
       });
     }
   };
@@ -49,57 +53,34 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
     e.stopPropagation();
     
     try {
-      // PDF 문서인 경우 실제 다운로드
+      // PDF 문서이고 실제 URL이 있는 경우
       if (result.type === 'PDF문서' && result.url && result.url !== '#') {
-        // Supabase Storage에서 파일 다운로드
-        const fileName = result.fileName || `${result.title}.pdf`;
+        // 실제 다운로드 시도
+        const link = document.createElement('a');
+        link.href = result.url;
+        link.download = result.fileName || `${result.title}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
-        // 파일 URL에서 파일 경로 추출
-        const urlParts = result.url.split('/');
-        const filePath = urlParts[urlParts.length - 1];
-        
-        if (filePath) {
-          const { data, error } = await supabase.storage
-            .from('pdf-documents')
-            .download(filePath);
-          
-          if (error) {
-            console.error('다운로드 오류:', error);
-            toast({
-              title: "다운로드 실패",
-              description: "파일을 다운로드할 수 없습니다.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          // 파일 다운로드 트리거
-          const url = URL.createObjectURL(data);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          
-          toast({
-            title: "다운로드 완료",
-            description: `${fileName} 파일이 다운로드되었습니다.`,
-          });
-        }
+        toast({
+          title: "다운로드 시작",
+          description: `${result.fileName || result.title} 다운로드를 시작했습니다.`,
+        });
       } else {
-        // 다른 문서 타입의 경우 안내 메시지
+        // 다른 문서 타입이거나 URL이 없는 경우
         toast({
           title: "다운로드 불가",
-          description: `${result.title} - 이 문서는 다운로드할 수 없습니다. 담당부서(${result.department})에 문의하세요.`,
+          description: `${result.title} - 이 문서는 직접 다운로드할 수 없습니다. 담당부서(${result.department})에 문의하여 파일을 요청하세요.`,
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error('다운로드 처리 중 오류:', error);
       toast({
         title: "다운로드 오류",
-        description: "파일 다운로드 중 오류가 발생했습니다.",
+        description: "파일 다운로드 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         variant: "destructive",
       });
     }
@@ -128,7 +109,7 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
               </Badge>
             )}
             {result.url && result.url !== '#' && (
-              <ExternalLink className="h-4 w-4 text-gray-400" />
+              <ExternalLink className="h-4 w-4 text-green-500" />
             )}
           </div>
         </div>
@@ -159,7 +140,7 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
               size="sm"
               variant="outline"
               onClick={handleViewFile}
-              className="h-8 px-3 text-xs"
+              className="h-8 px-3 text-xs hover:bg-blue-50 hover:border-blue-300"
             >
               <Eye className="h-3 w-3 mr-1" />
               보기
@@ -168,7 +149,7 @@ export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps)
               size="sm"
               variant="outline"
               onClick={handleDownloadFile}
-              className="h-8 px-3 text-xs"
+              className="h-8 px-3 text-xs hover:bg-green-50 hover:border-green-300"
             >
               <Download className="h-3 w-3 mr-1" />
               다운로드

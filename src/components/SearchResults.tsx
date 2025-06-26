@@ -25,9 +25,9 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
       <SearchResultsHeader resultsCount={results.length} query={query} />
 
       <div className="space-y-4">
-        {results.map((result) => (
+        {results.map((result, index) => (
           <SearchResultCard 
-            key={result.id} 
+            key={`${result.id}-${index}`} // 고유 key 생성으로 중복 오류 해결
             result={result} 
             searchQuery={query} 
           />
