@@ -53,11 +53,11 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
 
           @keyframes smokeRise {
             0% {
-              opacity: 0.3;
+              opacity: 0.15;
               transform: translateY(0) scale(0.5);
             }
             50% {
-              opacity: 0.2;
+              opacity: 0.1;
               transform: translateY(-100px) scale(1);
             }
             100% {
@@ -68,11 +68,11 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
 
           @keyframes smokeSpread {
             0% {
-              opacity: 0.25;
+              opacity: 0.12;
               transform: scale(0);
             }
             50% {
-              opacity: 0.15;
+              opacity: 0.08;
               transform: scale(1);
             }
             100% {
@@ -83,7 +83,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
 
           @keyframes flashEffect {
             0% { opacity: 0; }
-            10% { opacity: 0.4; }
+            10% { opacity: 0.2; }
             20% { opacity: 0; }
             100% { opacity: 0; }
           }
@@ -91,7 +91,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
       </style>
       
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center">
-        {/* 폭발 플래시 효과 - 투명도 낮춤 */}
+        {/* 폭발 플래시 효과 - 투명도 더 낮춤 */}
         {isExploded && (
           <div 
             className="absolute inset-0 bg-gray-300"
@@ -122,7 +122,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           />
         )}
 
-        {/* 자욱한 연기 효과들 - 개수 줄이고 투명도 낮춤 */}
+        {/* 자욱한 연기 효과들 - 투명도 더 낮춤 */}
         {isExploded && Array.from({ length: 12 }).map((_, i) => {
           const size = 60 + Math.random() * 100;
           const left = 50 + (Math.random() - 0.5) * 80;
@@ -133,7 +133,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           return (
             <div
               key={`smoke-${i}`}
-              className="absolute rounded-full bg-gray-400/15"
+              className="absolute rounded-full bg-gray-400/8"
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
@@ -145,7 +145,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           );
         })}
 
-        {/* 넓게 퍼지는 연기 구름들 - 개수 줄이고 투명도 낮춤 */}
+        {/* 넓게 퍼지는 연기 구름들 - 투명도 더 낮춤 */}
         {isExploded && Array.from({ length: 5 }).map((_, i) => {
           const size = 120 + i * 60;
           const delay = i * 0.2;
@@ -157,7 +157,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           return (
             <div
               key={`spread-smoke-${i}`}
-              className="absolute rounded-full bg-gray-500/10"
+              className="absolute rounded-full bg-gray-500/6"
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
@@ -170,7 +170,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           );
         })}
 
-        {/* 중앙에서 퍼지는 진한 연기 - 개수 줄이고 투명도 낮춤 */}
+        {/* 중앙에서 퍼지는 진한 연기 - 투명도 더 낮춤 */}
         {isExploded && Array.from({ length: 8 }).map((_, i) => {
           const size = 70 + Math.random() * 80;
           const delay = i * 0.05;
@@ -180,7 +180,7 @@ export const GrayBombEffect = ({ show, onComplete }: GrayBombEffectProps) => {
           return (
             <div
               key={`dense-smoke-${i}`}
-              className="absolute rounded-full bg-gray-600/12"
+              className="absolute rounded-full bg-gray-600/7"
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
