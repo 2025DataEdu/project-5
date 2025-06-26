@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { BombIcon } from './BombIcon';
 import { ExplosionEffect } from './ExplosionEffect';
 import { ShockwaveEffect } from './ShockwaveEffect';
-import { FireworksEffect } from './FireworksEffect';
 import { SmokeEffect } from './SmokeEffect';
 import { ScreenShake } from './ScreenShake';
 
@@ -15,7 +14,6 @@ interface BombEffectProps {
 export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
   const [isExploding, setIsExploding] = useState(false);
   const [showShockwave, setShowShockwave] = useState(false);
-  const [showFireworks, setShowFireworks] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
   useEffect(() => {
@@ -30,21 +28,15 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
         setShowShockwave(true);
       }, 1000);
       
-      // 1.25초 후 불꽃놀이
-      const fireworksTimer = setTimeout(() => {
-        setShowFireworks(true);
-      }, 1250);
-      
-      // 1.5초 후 연기 효과
+      // 1.2초 후 연기 효과 (더 빨리 시작)
       const smokeTimer = setTimeout(() => {
         setShowSmoke(true);
-      }, 1500);
+      }, 1200);
       
       // 3초 후 이펙트 제거
       const completeTimer = setTimeout(() => {
         setIsExploding(false);
         setShowShockwave(false);
-        setShowFireworks(false);
         setShowSmoke(false);
         onComplete?.();
       }, 3000);
@@ -52,7 +44,6 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
       return () => {
         clearTimeout(explodeTimer);
         clearTimeout(shockwaveTimer);
-        clearTimeout(fireworksTimer);
         clearTimeout(smokeTimer);
         clearTimeout(completeTimer);
       };
@@ -71,7 +62,6 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
       <BombIcon show={!isExploding} />
       <ExplosionEffect show={isExploding} />
       <ShockwaveEffect show={showShockwave} />
-      <FireworksEffect show={showFireworks} />
       <SmokeEffect show={showSmoke} />
       <ScreenShake isActive={isExploding} />
     </div>
