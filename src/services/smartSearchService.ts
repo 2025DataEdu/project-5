@@ -90,11 +90,19 @@ export const performSmartSearch = async (
 
 export const getEmbeddingStats = async () => {
   try {
+    console.log('📊 Fetching embedding statistics...');
+    
+    // 전체 임베딩 데이터 조회 (결재문서 + PDF문서 모두 포함)
     const { data, error } = await supabase
       .from('document_embeddings')
       .select('document_type, department', { count: 'exact' });
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error fetching embeddings:', error);
+      throw error;
+    }
+    
+    console.log(`📊 Total embeddings found: ${data?.length || 0}`);
     
     const stats = {
       total: data?.length || 0,
@@ -104,12 +112,19 @@ export const getEmbeddingStats = async () => {
     
     data?.forEach(item => {
       // 문서 타입별 통계
-      stats.byType[item.document_type] = (stats.byType[item.document_type] || 0) + 1;
+      const docType = item.document_type || '미분류';
+      stats.byType[docType] = (stats.byType[docType] || 0) + 1;
       
       // 부서별 통계
       if (item.department) {
         stats.byDepartment[item.department] = (stats.byDepartment[item.department] || 0) + 1;
       }
+    });
+    
+    console.log('📊 Embedding stats calculated:', {
+      total: stats.total,
+      byType: stats.byType,
+      topDepartments: Object.keys(stats.byDepartment).slice(0, 3)
     });
     
     return stats;
