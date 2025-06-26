@@ -12,9 +12,9 @@ interface SearchResultCardProps {
 
 export const SearchResultCard = ({ result, searchQuery }: SearchResultCardProps) => {
   const handleCardClick = async () => {
-    // 문서 조회 로그 기록
+    // 문서 조회 로그 기록 (ID는 이미 문자열로 처리됨)
     await logDocumentView(
-      result.id.toString(),
+      result.id,
       result.type,
       result.title,
       result.department,

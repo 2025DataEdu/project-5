@@ -51,7 +51,7 @@ export const useSearchLogic = () => {
 
           if (error) {
             console.error('❌ AI function error:', error);
-            setSearchError('AI 검색 중 오류가 발생했습니다.');
+            setSearchError(`AI 검색 중 오류가 발생했습니다: ${error.message}`);
           } else if (data?.success) {
             console.log('✅ AI response received:', data.response);
             setAiResponse(data.response);
@@ -61,13 +61,24 @@ export const useSearchLogic = () => {
           }
         } catch (aiError) {
           console.error('💥 Error in AI search:', aiError);
-          setSearchError('AI 검색 서비스에 연결할 수 없습니다.');
+          setSearchError(`AI 검색 서비스에 연결할 수 없습니다: ${aiError instanceof Error ? aiError.message : '알 수 없는 오류'}`);
         }
         setSearchResults([]);
       }
     } catch (error) {
       console.error('💥 Error in database search:', error);
-      setSearchError('데이터베이스 검색 중 오류가 발생했습니다.');
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다';
+      
+      // 사용자에게 구체적인 검색 실패 조건 표시
+      if (errorMessage.includes('결재문서')) {
+        setSearchError(`결재문서 검색 실패: 공개 상태가 '공개'인 문서 중에서 "${query}"와 관련된 내용을 찾을 수 없습니다. ${errorMessage}`);
+      } else if (errorMessage.includes('PDF문서')) {
+        setSearchError(`PDF문서 검색 실패: 활성 상태인 PDF 중에서 "${query}"와 관련된 내용을 찾을 수 없습니다. ${errorMessage}`);
+      } else if (errorMessage.includes('직원정보')) {
+        setSearchError(`직원정보 검색 실패: "${query}"와 관련된 담당업무, 부서, 직책을 찾을 수 없습니다. ${errorMessage}`);
+      } else {
+        setSearchError(`검색 중 오류가 발생했습니다: ${errorMessage}`);
+      }
       setSearchResults([]);
     } finally {
       setIsSearching(false);
