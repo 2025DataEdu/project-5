@@ -15,7 +15,7 @@ export type Database = {
           created_at: string
           department: string | null
           document_id: string | null
-          document_id_old: number
+          document_id_old: number | null
           document_title: string
           document_type: string
           embedding: string | null
@@ -28,7 +28,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           document_id?: string | null
-          document_id_old: number
+          document_id_old?: number | null
           document_title: string
           document_type?: string
           embedding?: string | null
@@ -41,7 +41,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           document_id?: string | null
-          document_id_old?: number
+          document_id_old?: number | null
           document_title?: string
           document_type?: string
           embedding?: string | null
