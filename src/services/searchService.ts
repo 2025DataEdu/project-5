@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SearchResult {
@@ -11,42 +12,6 @@ export interface SearchResult {
   type: string;
   url: string;
 }
-
-export const searchRegulations = async (query: string): Promise<SearchResult[]> => {
-  try {
-    console.log('Searching regulations with query:', query);
-    
-    // Search in regulations table
-    const { data: regulations, error: regulationsError } = await supabase
-      .from('regulations')
-      .select('*')
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-      .limit(10);
-
-    if (regulationsError) {
-      console.error('Error searching regulations:', regulationsError);
-      return [];
-    }
-
-    // Transform regulations to SearchResult format
-    const regulationResults: SearchResult[] = regulations?.map(regulation => ({
-      id: regulation.id,
-      title: regulation.title || '제목 없음',
-      content: regulation.content || '내용 없음',
-      source: "규정문서",
-      department: regulation.department || '미분류',
-      lastModified: regulation.updated_at?.split('T')[0] || regulation.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-      fileName: `${regulation.title || 'regulation'}.pdf`,
-      type: "규정문서",
-      url: regulation.url || '#'
-    })) || [];
-
-    return regulationResults;
-  } catch (error) {
-    console.error('Regulations search error:', error);
-    return [];
-  }
-};
 
 export const searchDocuments = async (query: string): Promise<SearchResult[]> => {
   try {
@@ -162,16 +127,15 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
 
 export const performSearch = async (query: string): Promise<SearchResult[]> => {
   try {
-    // Perform all searches in parallel including regulations
-    const [regulationResults, documentResults, pdfResults, employeeResults] = await Promise.all([
-      searchRegulations(query),
+    // Perform all searches in parallel with existing tables only
+    const [documentResults, pdfResults, employeeResults] = await Promise.all([
       searchDocuments(query),
       searchPdfDocuments(query),
       searchEmployees(query)
     ]);
 
     // Combine and return results
-    const allResults = [...regulationResults, ...documentResults, ...pdfResults, ...employeeResults];
+    const allResults = [...documentResults, ...pdfResults, ...employeeResults];
     console.log('Search completed, found', allResults.length, 'results');
     
     return allResults;
