@@ -45,9 +45,9 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
-      {/* 전체 화면 플래시 효과 */}
+      {/* 완화된 화면 플래시 효과 */}
       {isExploding && (
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-300 via-red-300 to-yellow-300 opacity-40 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-200 via-red-200 to-yellow-200 opacity-20 animate-pulse" />
       )}
       
       <BombIcon show={!isExploding} />

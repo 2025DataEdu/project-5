@@ -8,59 +8,59 @@ export const SmokeEffect = ({ show }: SmokeEffectProps) => {
 
   return (
     <div className="absolute inset-0">
-      {/* 메인 연기 구름들 - 훨씬 크고 넓게 퍼짐 */}
-      {Array.from({ length: 12 }).map((_, i) => (
+      {/* 간소화된 메인 연기 구름들 */}
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={`smoke-${i}`}
-          className="absolute bg-gray-500 rounded-full opacity-25 animate-pulse"
+          className="absolute bg-gray-500 rounded-full opacity-20 animate-pulse"
           style={{
-            width: `${120 + i * 30}px`,
-            height: `${120 + i * 30}px`,
-            left: `${30 + i * 4 - 12}%`,
-            top: `${20 - i * 6}%`,
-            animationDelay: `${i * 0.15}s`,
+            width: `${60 + i * 15}px`,
+            height: `${60 + i * 15}px`,
+            left: `${40 + i * 3}%`,
+            top: `${30 - i * 4}%`,
+            animationDelay: `${i * 0.2}s`,
             animationDuration: '2s',
           }}
         />
       ))}
       
-      {/* 추가 대형 연기 구름들 */}
-      {Array.from({ length: 10 }).map((_, i) => (
+      {/* 축소된 대형 연기 구름들 */}
+      {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={`large-cloud-${i}`}
-          className="absolute bg-gray-400 rounded-full opacity-20 animate-bounce"
+          className="absolute bg-gray-400 rounded-full opacity-15 animate-bounce"
           style={{
-            width: `${80 + i * 25}px`,
-            height: `${60 + i * 20}px`,
-            left: `${25 + i * 5}%`,
-            top: `${15 - i * 4}%`,
-            animationDelay: `${i * 0.2}s`,
-            animationDuration: '2.5s',
+            width: `${50 + i * 12}px`,
+            height: `${40 + i * 10}px`,
+            left: `${35 + i * 4}%`,
+            top: `${25 - i * 3}%`,
+            animationDelay: `${i * 0.25}s`,
+            animationDuration: '2.2s',
           }}
         />
       ))}
 
-      {/* 외곽 확산 연기 */}
-      {Array.from({ length: 8 }).map((_, i) => (
+      {/* 간소화된 외곽 확산 연기 */}
+      {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={`outer-smoke-${i}`}
-          className="absolute bg-gray-600 rounded-full opacity-15 animate-ping"
+          className="absolute bg-gray-600 rounded-full opacity-10 animate-ping"
           style={{
-            width: `${200 + i * 40}px`,
-            height: `${180 + i * 35}px`,
-            left: `${10 + i * 8}%`,
-            top: `${5 - i * 3}%`,
-            animationDelay: `${i * 0.25}s`,
-            animationDuration: '1.8s',
+            width: `${80 + i * 20}px`,
+            height: `${70 + i * 18}px`,
+            left: `${30 + i * 6}%`,
+            top: `${20 - i * 2}%`,
+            animationDelay: `${i * 0.3}s`,
+            animationDuration: '1.5s',
           }}
         />
       ))}
 
-      {/* 중앙 집중 연기 */}
+      {/* 축소된 중앙 집중 연기 */}
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="w-96 h-96 bg-gray-500 rounded-full opacity-30 animate-pulse" />
-        <div className="absolute inset-0 w-80 h-80 bg-gray-400 rounded-full opacity-25 animate-bounce m-8" />
-        <div className="absolute inset-0 w-64 h-64 bg-gray-600 rounded-full opacity-20 animate-ping m-16" />
+        <div className="w-32 h-32 bg-gray-500 rounded-full opacity-25 animate-pulse" />
+        <div className="absolute inset-0 w-24 h-24 bg-gray-400 rounded-full opacity-20 animate-bounce m-4" />
+        <div className="absolute inset-0 w-16 h-16 bg-gray-600 rounded-full opacity-15 animate-ping m-8" />
       </div>
     </div>
   );
