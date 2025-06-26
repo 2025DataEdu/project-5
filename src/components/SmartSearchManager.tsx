@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Brain, Database, RefreshCw, TrendingUp, Info } from "lucide-react";
+import { Brain, Database, RefreshCw, TrendingUp, Info, CheckCircle, Clock } from "lucide-react";
 import { generateEmbeddings, getEmbeddingStats } from "@/services/smartSearchService";
 
 export const SmartSearchManager = () => {
@@ -19,6 +19,7 @@ export const SmartSearchManager = () => {
     processed: number;
     errors: number;
     total: number;
+    existing?: number;
   } | null>(null);
 
   const loadStats = async () => {
@@ -51,6 +52,16 @@ export const SmartSearchManager = () => {
     }
   };
 
+  const getCompletionPercentage = () => {
+    if (!stats?.total || !lastGeneration?.total) return 0;
+    return Math.round((stats.total / lastGeneration.total) * 100);
+  };
+
+  const getRemainingCount = () => {
+    if (!lastGeneration?.total || !stats?.total) return 0;
+    return Math.max(0, lastGeneration.total - stats.total);
+  };
+
   return (
     <div className="space-y-6">
       {/* 스마트 검색 안내 */}
@@ -75,6 +86,29 @@ export const SmartSearchManager = () => {
             <div className="text-sm text-gray-600">
               문서들의 벡터 임베딩을 생성하여 스마트 검색 기능을 활성화합니다.
             </div>
+
+            {lastGeneration && (
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">전체 진행률</span>
+                  <span className="text-sm text-blue-600">
+                    {getCompletionPercentage()}% 완료
+                  </span>
+                </div>
+                <Progress 
+                  value={getCompletionPercentage()} 
+                  className="h-2 mb-2"
+                />
+                <div className="text-xs text-gray-600">
+                  {stats?.total || 0} / {lastGeneration.total} 문서 처리 완료
+                  {getRemainingCount() > 0 && (
+                    <span className="text-orange-600 ml-2">
+                      (남은 문서: {getRemainingCount()}개)
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             
             <Button 
               onClick={handleGenerateEmbeddings}
@@ -89,32 +123,28 @@ export const SmartSearchManager = () => {
               ) : (
                 <>
                   <Brain className="h-4 w-4 mr-2" />
-                  임베딩 생성 시작
+                  {stats?.total === 0 ? '임베딩 생성 시작' : '추가 임베딩 생성'}
                 </>
               )}
             </Button>
 
             {lastGeneration && (
               <div className="space-y-2">
-                <div className="text-sm font-medium">마지막 생성 결과:</div>
+                <div className="text-sm font-medium">최근 생성 결과:</div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div className="text-center">
                     <div className="font-semibold text-green-600">{lastGeneration.processed}</div>
-                    <div className="text-gray-500">처리됨</div>
+                    <div className="text-gray-500">신규 처리</div>
                   </div>
                   <div className="text-center">
                     <div className="font-semibold text-red-600">{lastGeneration.errors}</div>
                     <div className="text-gray-500">오류</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-semibold text-blue-600">{lastGeneration.total}</div>
-                    <div className="text-gray-500">전체</div>
+                    <div className="font-semibold text-blue-600">{lastGeneration.existing || 0}</div>
+                    <div className="text-gray-500">기존</div>
                   </div>
                 </div>
-                <Progress 
-                  value={(lastGeneration.processed / lastGeneration.total) * 100} 
-                  className="h-2"
-                />
               </div>
             )}
           </CardContent>
@@ -134,7 +164,26 @@ export const SmartSearchManager = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
                   <div className="text-sm text-gray-500">총 임베딩 개수</div>
+                  {lastGeneration?.total && (
+                    <div className="text-xs text-gray-400 mt-1">
+                      전체 {lastGeneration.total}개 문서 중
+                    </div>
+                  )}
                 </div>
+
+                {getCompletionPercentage() === 100 && (
+                  <div className="flex items-center justify-center gap-2 text-green-600 text-sm">
+                    <CheckCircle className="h-4 w-4" />
+                    모든 문서 임베딩 완료
+                  </div>
+                )}
+
+                {getRemainingCount() > 0 && (
+                  <div className="flex items-center justify-center gap-2 text-orange-600 text-sm">
+                    <Clock className="h-4 w-4" />
+                    {getRemainingCount()}개 문서 대기 중
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <div>
