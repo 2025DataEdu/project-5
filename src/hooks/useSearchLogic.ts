@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performSearch, SearchResult } from "@/services/searchService";
+import { allMockResults } from "@/data/mockData";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,24 +20,37 @@ export const useSearchLogic = () => {
     setShowHistory(false);
     setAiResponse("");
 
-    try {
-      console.log('Starting search for:', query);
-      
-      // Search in Supabase tables
-      const results = await performSearch(query);
-      console.log('Search results from Supabase:', results);
-      
-      if (results.length > 0) {
-        setSearchResults(results);
-        
-        // 자연어 검색의 경우 비교 및 히스토리 표시
-        if (isNaturalLanguage && results.length > 0) {
-          setSelectedRegulation(results[0]);
+    setTimeout(async () => {
+      const loweredQuery = query.toLowerCase();
+      let filteredResults;
+
+      if (isNaturalLanguage) {
+        // 자연어 키워드 기반 검색 키워드 배열
+        const keywords = ["출장", "교육", "절차", "서류", "신청", "예산", "집행"];
+        filteredResults = allMockResults.filter(result =>
+          keywords.some(keyword =>
+            (result.title + result.content).includes(keyword)
+          )
+        );
+
+        if (filteredResults.length > 0) {
+          setSelectedRegulation(filteredResults[0]);
           setShowComparison(true);
           setShowHistory(true);
         }
       } else {
-        // 검색 결과가 없을 때 AI API 호출
+        // 일반 키워드 검색 개선 → title + content 합쳐서 검색
+        filteredResults = allMockResults.filter(result =>
+          (result.title + result.content).toLowerCase().includes(loweredQuery)
+        );
+      }
+
+      // 결과 확인용 로그
+      console.log("검색어:", query);
+      console.log("검색 결과 개수:", filteredResults.length);
+      console.log("검색 결과:", filteredResults);
+
+      if (filteredResults.length === 0) {
         console.log('No search results found, calling AI API...');
         try {
           const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
@@ -52,15 +66,11 @@ export const useSearchLogic = () => {
         } catch (error) {
           console.error('Error in AI search:', error);
         }
-        
-        setSearchResults([]);
       }
-    } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
-    } finally {
+
+      setSearchResults(filteredResults);
       setIsSearching(false);
-    }
+    }, 1500);
   };
 
   return {
