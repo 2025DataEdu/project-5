@@ -25,65 +25,104 @@ export const StatsSection = () => {
       try {
         console.log('📊 Fetching real statistics from Supabase...');
         
-        // 1. 총 문서 수 (결재문서목록 테이블)
-        const { count: totalDocs, error: docsError } = await supabase
+        // 먼저 데이터베이스 연결 테스트
+        const { data: testData, error: testError } = await supabase
           .from('결재문서목록')
-          .select('*', { count: 'exact', head: true });
+          .select('*')
+          .limit(1);
+
+        console.log('🔍 Database connection test:', {
+          testData,
+          testError,
+          hasData: testData && testData.length > 0
+        });
+
+        // 1. 총 문서 수 (결재문서목록 테이블) - 더 자세한 로깅
+        console.log('📄 Fetching total documents...');
+        const { count: totalDocs, error: docsError, data: docsData } = await supabase
+          .from('결재문서목록')
+          .select('*', { count: 'exact' });
+
+        console.log('📊 Total documents query result:', {
+          count: totalDocs,
+          error: docsError,
+          dataLength: docsData?.length,
+          sampleData: docsData?.slice(0, 3)
+        });
 
         if (docsError) {
-          console.error('Error fetching total documents:', docsError);
+          console.error('❌ Error fetching total documents:', docsError);
         }
 
         // 2. 참여 부서 수 (고유 부서명)
+        console.log('🏢 Fetching departments...');
         const { data: deptData, error: deptError } = await supabase
           .from('결재문서목록')
           .select('전체부서명')
           .not('전체부서명', 'is', null);
 
+        console.log('📊 Departments query result:', {
+          deptData,
+          deptError,
+          dataLength: deptData?.length
+        });
+
         if (deptError) {
-          console.error('Error fetching departments:', deptError);
+          console.error('❌ Error fetching departments:', deptError);
         }
 
         const uniqueDepartments = new Set(
           (deptData as any[])?.map((item: any) => item.전체부서명)
         ).size;
 
+        console.log('🔢 Unique departments count:', uniqueDepartments);
+
         // 3. 이번 달 업데이트 (이번 달에 생성된 문서)
         const currentMonth = new Date();
         const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        
+        console.log('📅 Fetching monthly updates since:', firstDayOfMonth.toISOString().split('T')[0]);
         
         const { count: monthlyDocs, error: monthlyError } = await supabase
           .from('결재문서목록')
           .select('*', { count: 'exact', head: true })
           .gte('생성일자', firstDayOfMonth.toISOString().split('T')[0]);
 
+        console.log('📊 Monthly updates result:', {
+          count: monthlyDocs,
+          error: monthlyError
+        });
+
         if (monthlyError) {
-          console.error('Error fetching monthly updates:', monthlyError);
+          console.error('❌ Error fetching monthly updates:', monthlyError);
         }
 
         // 4. 월 검색 수 (이번 달 search_logs)
+        console.log('🔍 Fetching monthly searches...');
         const { count: monthlySearchCount, error: searchError } = await supabase
           .from('search_logs')
           .select('*', { count: 'exact', head: true })
           .gte('search_date', firstDayOfMonth.toISOString());
 
+        console.log('📊 Monthly searches result:', {
+          count: monthlySearchCount,
+          error: searchError
+        });
+
         if (searchError) {
-          console.error('Error fetching monthly searches:', searchError);
+          console.error('❌ Error fetching monthly searches:', searchError);
         }
 
-        setStats({
+        const finalStats = {
           totalDocuments: totalDocs || 0,
           totalDepartments: uniqueDepartments,
           monthlyUpdates: monthlyDocs || 0,
           monthlySearches: monthlySearchCount || 0
-        });
+        };
 
-        console.log('✅ Statistics loaded:', {
-          totalDocuments: totalDocs,
-          totalDepartments: uniqueDepartments,
-          monthlyUpdates: monthlyDocs,
-          monthlySearches: monthlySearchCount
-        });
+        setStats(finalStats);
+
+        console.log('✅ Final statistics loaded:', finalStats);
 
       } catch (error) {
         console.error('💥 Error fetching statistics:', error);
