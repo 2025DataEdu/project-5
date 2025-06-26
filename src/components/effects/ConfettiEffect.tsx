@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Firework } from './Firework';
 
@@ -122,8 +123,9 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {/* 배경 플래시 효과 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/20 via-pink-200/20 to-blue-200/20 animate-pulse" />
+      {/* 배경 플래시 효과 - 더 강렬하게 */}
+      <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/30 via-pink-200/30 to-blue-200/30 animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-300/20 via-purple-300/20 to-cyan-300/20 animate-pulse" style={{ animationDelay: '0.5s' }} />
       
       {/* 폭죽 파티클들 */}
       {particles.map((particle) => (
@@ -152,11 +154,34 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
         </div>
       ))}
       
-      {/* 중앙 폭발 효과 */}
+      {/* 중앙 폭발 효과 - 훨씬 더 크고 화려하게 */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="w-32 h-32 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 rounded-full opacity-30 animate-ping" />
-        <div className="absolute top-4 left-4 w-24 h-24 bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 rounded-full opacity-40 animate-pulse" />
-        <div className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 rounded-full opacity-50 animate-bounce" />
+        {/* 가장 큰 외곽 링 */}
+        <div className="w-80 h-80 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 rounded-full opacity-20 animate-ping" />
+        <div className="absolute top-8 left-8 w-64 h-64 bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 rounded-full opacity-25 animate-pulse" />
+        <div className="absolute top-12 left-12 w-56 h-56 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 rounded-full opacity-30 animate-ping" style={{ animationDelay: '0.3s' }} />
+        
+        {/* 중간 크기 링들 */}
+        <div className="absolute top-16 left-16 w-48 h-48 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 rounded-full opacity-35 animate-pulse" style={{ animationDelay: '0.6s' }} />
+        <div className="absolute top-20 left-20 w-40 h-40 bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 rounded-full opacity-40 animate-ping" style={{ animationDelay: '0.9s' }} />
+        
+        {/* 내부 핵심 폭발 */}
+        <div className="absolute top-24 left-24 w-32 h-32 bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 rounded-full opacity-50 animate-bounce" />
+        <div className="absolute top-28 left-28 w-24 h-24 bg-gradient-to-r from-white via-yellow-200 to-orange-200 rounded-full opacity-60 animate-pulse" />
+        <div className="absolute top-32 left-32 w-16 h-16 bg-white rounded-full opacity-80 animate-ping" />
+        
+        {/* 추가 스파클링 효과들 */}
+        <div className="absolute top-10 left-40 w-8 h-8 bg-yellow-300 rounded-full opacity-70 animate-bounce" style={{ animationDelay: '0.2s' }} />
+        <div className="absolute top-40 left-10 w-6 h-6 bg-pink-300 rounded-full opacity-60 animate-pulse" style={{ animationDelay: '0.4s' }} />
+        <div className="absolute top-60 left-60 w-10 h-10 bg-cyan-300 rounded-full opacity-50 animate-ping" style={{ animationDelay: '0.6s' }} />
+        <div className="absolute top-20 left-60 w-4 h-4 bg-purple-300 rounded-full opacity-80 animate-bounce" style={{ animationDelay: '0.8s' }} />
+        <div className="absolute top-50 left-20 w-5 h-5 bg-green-300 rounded-full opacity-70 animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        {/* 반짝이는 별 효과들 */}
+        <div className="absolute top-5 left-5 w-3 h-3 bg-white transform rotate-45 opacity-90 animate-ping" style={{ animationDelay: '0.1s' }} />
+        <div className="absolute top-70 left-70 w-3 h-3 bg-white transform rotate-45 opacity-90 animate-pulse" style={{ animationDelay: '0.3s' }} />
+        <div className="absolute top-15 left-65 w-2 h-2 bg-yellow-200 transform rotate-45 opacity-80 animate-bounce" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-65 left-15 w-2 h-2 bg-pink-200 transform rotate-45 opacity-80 animate-ping" style={{ animationDelay: '0.7s' }} />
       </div>
 
       <style>
