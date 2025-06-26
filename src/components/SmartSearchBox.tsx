@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Clock, X } from "lucide-react";
 
 interface SmartSearchBoxProps {
-  onSearch: (query: string, isNaturalLanguage: boolean) => void;
+  onSearch: (query: string) => void;
   isSearching: boolean;
 }
 
@@ -22,20 +22,18 @@ export const SmartSearchBox = ({
 
   const handleKeywordClick = (keyword: string) => {
     setQuery(keyword);
-    onSearch(keyword, false);
+    onSearch(keyword);
   };
 
   const handleSmartSearch = () => {
     if (query.trim()) {
-      // 질문 형태나 긴 문장인 경우 자연어 검색으로, 짧은 키워드는 일반 검색으로 처리
-      const isNaturalLanguage = query.includes('?') || query.includes('어떻게') || query.includes('무엇') || query.length > 10;
-      onSearch(query, isNaturalLanguage);
+      onSearch(query);
     }
   };
 
   const handleRecentSearchClick = (search: string) => {
     setQuery(search);
-    onSearch(search, true);
+    onSearch(search);
   };
 
   const handleClearQuery = () => {

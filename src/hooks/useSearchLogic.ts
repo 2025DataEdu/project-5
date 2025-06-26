@@ -13,7 +13,7 @@ export const useSearchLogic = () => {
   const [selectedRegulation, setSelectedRegulation] = useState(null);
   const [aiResponse, setAiResponse] = useState("");
 
-  const handleSmartSearch = async (query: string, isNaturalLanguage: boolean) => {
+  const handleSmartSearch = async (query: string) => {
     setIsSearching(true);
     setSearchQuery(query);
     setShowComparison(false);
@@ -22,35 +22,41 @@ export const useSearchLogic = () => {
 
     setTimeout(async () => {
       const loweredQuery = query.toLowerCase();
-      let filteredResults;
-
-      if (isNaturalLanguage) {
-        // 자연어 키워드 기반 검색 키워드 배열
-        const keywords = ["출장", "교육", "절차", "서류", "신청", "예산", "집행"];
-        filteredResults = allMockResults.filter(result =>
-          keywords.some(keyword =>
-            (result.title + result.content).includes(keyword)
+      
+      // 통합 검색: 키워드 기반 + 자연어 키워드 매칭
+      const naturalLanguageKeywords = ["출장", "교육", "절차", "서류", "신청", "예산", "집행"];
+      
+      const filteredResults = allMockResults.filter(result => {
+        const combinedContent = (result.title + result.content).toLowerCase();
+        
+        // 1. 직접 키워드 매칭
+        const directMatch = combinedContent.includes(loweredQuery);
+        
+        // 2. 자연어 키워드 매칭
+        const naturalMatch = naturalLanguageKeywords.some(keyword =>
+          combinedContent.includes(keyword) && (
+            query.includes(keyword) || 
+            query.includes('?') || 
+            query.includes('어떻게') || 
+            query.includes('무엇')
           )
         );
-
-        if (filteredResults.length > 0) {
-          setSelectedRegulation(filteredResults[0]);
-          setShowComparison(true);
-          setShowHistory(true);
-        }
-      } else {
-        // 일반 키워드 검색 개선 → title + content 합쳐서 검색
-        filteredResults = allMockResults.filter(result =>
-          (result.title + result.content).toLowerCase().includes(loweredQuery)
-        );
-      }
+        
+        return directMatch || naturalMatch;
+      });
 
       // 결과 확인용 로그
       console.log("검색어:", query);
       console.log("검색 결과 개수:", filteredResults.length);
       console.log("검색 결과:", filteredResults);
 
-      if (filteredResults.length === 0) {
+      // 결과가 있으면 비교 및 히스토리 표시
+      if (filteredResults.length > 0) {
+        setSelectedRegulation(filteredResults[0]);
+        setShowComparison(true);
+        setShowHistory(true);
+      } else {
+        // 검색 결과가 없을 때 AI API 호출
         console.log('No search results found, calling AI API...');
         try {
           const { data, error } = await supabase.functions.invoke('ai-regulation-search', {
