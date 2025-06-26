@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface UsePaginationProps {
   data: any[];
@@ -36,7 +36,7 @@ export const usePagination = ({ data, itemsPerPage = 10 }: UsePaginationProps) =
   };
 
   // 데이터가 변경되면 첫 페이지로 리셋
-  useState(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [data.length]);
 
