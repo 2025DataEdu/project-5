@@ -15,7 +15,6 @@ export const useSearchLogic = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showGrayBomb, setShowGrayBomb] = useState(false);
 
   const handleSmartSearch = async (query: string) => {
     console.log('🎯 Starting enhanced smart search for:', query);
@@ -26,7 +25,6 @@ export const useSearchLogic = () => {
     setAiResponse("");
     setSearchError(null);
     setShowConfetti(false);
-    setShowGrayBomb(false);
 
     try {
       // 디버깅: 데이터베이스 내용 확인
@@ -86,11 +84,7 @@ export const useSearchLogic = () => {
         // 성공 시 폭죽 이펙트
         setShowConfetti(true);
       } else {
-        // 5단계: 결과가 0개일 때 회색 폭탄 이펙트
-        console.log('💥 No search results found - showing gray bomb effect!');
-        setShowGrayBomb(true);
-        
-        // 6단계: 결과가 없을 때만 AI API 호출
+        // 5단계: 결과가 없을 때 AI API 호출
         console.log('❌ No search results found, trying AI API...');
         try {
           console.log('🤖 Calling AI regulation search function...');
@@ -136,9 +130,7 @@ export const useSearchLogic = () => {
     aiResponse,
     searchError,
     showConfetti,
-    showGrayBomb,
     setShowConfetti,
-    setShowGrayBomb,
     handleSmartSearch
   };
 };
