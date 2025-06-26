@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from 'react';
+import { Firework } from './Firework';
 
 interface ConfettiEffectProps {
   show: boolean;
@@ -19,6 +19,16 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
     shape: 'circle' | 'square' | 'triangle';
   }>>([]);
 
+  const [fireworks, setFireworks] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    color: string;
+    particleCount: number;
+    size: number;
+    delay: number;
+  }>>([]);
+
   useEffect(() => {
     if (show) {
       const colors = [
@@ -33,20 +43,33 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
       const newParticles = Array.from({ length: 100 }, (_, i) => ({
         id: i,
         x: Math.random() * window.innerWidth,
-        y: Math.random() * -200 - 50, // 더 높은 위치에서 시작
+        y: Math.random() * -200 - 50,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * 360,
-        size: Math.random() * 12 + 6, // 더 큰 크기
-        vx: (Math.random() - 0.5) * 4, // 수평 속도
-        vy: Math.random() * 2 + 1, // 수직 속도
+        size: Math.random() * 12 + 6,
+        vx: (Math.random() - 0.5) * 4,
+        vy: Math.random() * 2 + 1,
         shape: shapes[Math.floor(Math.random() * shapes.length)],
       }));
       
-      setParticles(newParticles);
+      // 폭죽 효과 생성 (8개)
+      const newFireworks = Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 80 + 10, // 10% ~ 90% 범위
+        y: Math.random() * 60 + 20, // 20% ~ 80% 범위
+        color: colors[Math.floor(Math.random() * colors.length)],
+        particleCount: Math.floor(Math.random() * 15) + 10, // 10~25개
+        size: Math.floor(Math.random() * 4) + 4, // 4~8px
+        delay: Math.random() * 2, // 0~2초 지연
+      }));
       
-      // 4초 후 이펙트 제거 (더 오래 지속)
+      setParticles(newParticles);
+      setFireworks(newFireworks);
+      
+      // 4초 후 이펙트 제거
       const timer = setTimeout(() => {
         setParticles([]);
+        setFireworks([]);
         onComplete?.();
       }, 4000);
       
@@ -54,7 +77,7 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
     }
   }, [show, onComplete]);
 
-  if (!show || particles.length === 0) return null;
+  if (!show) return null;
 
   const getShapeStyle = (particle: typeof particles[0]) => {
     const baseStyle = {
@@ -109,6 +132,24 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
           className="absolute animate-pulse"
           style={getShapeStyle(particle)}
         />
+      ))}
+      
+      {/* 폭죽 효과들 */}
+      {fireworks.map((firework) => (
+        <div
+          key={firework.id}
+          style={{
+            animationDelay: `${firework.delay}s`
+          }}
+        >
+          <Firework
+            color={firework.color}
+            particleCount={firework.particleCount}
+            size={firework.size}
+            x={firework.x}
+            y={firework.y}
+          />
+        </div>
       ))}
       
       {/* 중앙 폭발 효과 */}
