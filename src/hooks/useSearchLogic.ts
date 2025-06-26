@@ -46,12 +46,22 @@ export const useSearchLogic = () => {
         console.log(`🎯 Smart search results: ${smartResults.length} found`);
       } catch (smartError) {
         console.warn('⚠️ Smart search failed, continuing with traditional search:', smartError);
+        // 스마트 검색 실패 시 폭탄 이펙트
+        setShowBomb(true);
       }
 
       // 2단계: 기존 키워드 검색 수행
       console.log("🔍 Performing traditional database search...");
-      const traditionalResults = await performSearch(query);
-      console.log(`📊 Traditional search results: ${traditionalResults.length} found`);
+      let traditionalResults: SearchResult[] = [];
+      
+      try {
+        traditionalResults = await performSearch(query);
+        console.log(`📊 Traditional search results: ${traditionalResults.length} found`);
+      } catch (searchError) {
+        console.error('❌ Traditional search failed:', searchError);
+        // 기존 검색 실패 시 폭탄 이펙트
+        setShowBomb(true);
+      }
 
       // 3단계: 결과 통합 및 중복 제거
       const combinedResults = [...smartResults];
@@ -91,7 +101,7 @@ export const useSearchLogic = () => {
           if (error) {
             console.error('❌ AI function error:', error);
             setSearchError(`AI 검색 중 오류가 발생했습니다: ${error.message}`);
-            // 실패 시 폭탄 이펙트
+            // AI 검색 실패 시 폭탄 이펙트
             setShowBomb(true);
           } else if (data?.success) {
             console.log('✅ AI response received:', data.response);
@@ -100,13 +110,13 @@ export const useSearchLogic = () => {
           } else {
             console.log('⚠️ AI response received but no success flag:', data);
             setSearchError('AI에서 응답을 받지 못했습니다.');
-            // 실패 시 폭탄 이펙트
+            // AI 응답 실패 시 폭탄 이펙트
             setShowBomb(true);
           }
         } catch (aiError) {
           console.error('💥 Error in AI search:', aiError);
           setSearchError(`AI 검색 서비스에 연결할 수 없습니다: ${aiError instanceof Error ? aiError.message : '알 수 없는 오류'}`);
-          // 실패 시 폭탄 이펙트
+          // AI 검색 연결 실패 시 폭탄 이펙트
           setShowBomb(true);
         }
         setSearchResults([]);
@@ -117,7 +127,7 @@ export const useSearchLogic = () => {
       
       setSearchError(`"${query}" 검색 실패: ${errorMessage}`);
       setSearchResults([]);
-      // 실패 시 폭탄 이펙트
+      // 전체 검색 프로세스 실패 시 폭탄 이펙트
       setShowBomb(true);
     } finally {
       setIsSearching(false);
