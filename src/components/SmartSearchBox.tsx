@@ -1,38 +1,91 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Clock, X } from "lucide-react";
+import { Sparkles, Clock, X, Trash2 } from "lucide-react";
 
 interface SmartSearchBoxProps {
   onSearch: (query: string) => void;
   isSearching: boolean;
+  onSearchComplete?: (query: string) => void;
 }
 
 export const SmartSearchBox = ({
   onSearch,
-  isSearching
+  isSearching,
+  onSearchComplete
 }: SmartSearchBoxProps) => {
   const [query, setQuery] = useState("");
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const recommendedKeywords = ["개인정보", "예산집행", "출장", "보안", "인사관리", "계약", "정보공개", "교육훈련", "문서관리", "감사"];
-  const recentSearches = ["출장비 신청 절차는 어떻게 되나요?", "개인정보 수집 시 주의사항", "예산 승인 권한자는 누구인가요?", "보안사고 발생 시 대응절차"];
+  const sampleRecentSearches = ["출장비 신청 절차는 어떻게 되나요?", "개인정보 수집 시 주의사항", "예산 승인 권한자는 누구인가요?", "보안사고 발생 시 대응절차"];
+
+  // 검색 기록 로드
+  useEffect(() => {
+    const loadSearchHistory = () => {
+      try {
+        const saved = localStorage.getItem('searchHistory');
+        if (saved) {
+          const history = JSON.parse(saved);
+          setRecentSearches(Array.isArray(history) ? history : []);
+        }
+      } catch (error) {
+        console.error('검색 기록 로드 실패:', error);
+      }
+    };
+
+    loadSearchHistory();
+  }, []);
+
+  // 검색 기록 저장
+  const saveSearchHistory = (history: string[]) => {
+    try {
+      localStorage.setItem('searchHistory', JSON.stringify(history));
+      setRecentSearches(history);
+    } catch (error) {
+      console.error('검색 기록 저장 실패:', error);
+    }
+  };
+
+  // 검색 기록에 추가
+  const addToSearchHistory = (searchQuery: string) => {
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
+
+    const newHistory = [trimmedQuery, ...recentSearches.filter(item => item !== trimmedQuery)].slice(0, 10);
+    saveSearchHistory(newHistory);
+  };
+
+  // 개별 검색 기록 삭제
+  const removeFromSearchHistory = (indexToRemove: number) => {
+    const newHistory = recentSearches.filter((_, index) => index !== indexToRemove);
+    saveSearchHistory(newHistory);
+  };
+
+  // 전체 검색 기록 삭제
+  const clearSearchHistory = () => {
+    saveSearchHistory([]);
+  };
 
   const handleKeywordClick = (keyword: string) => {
     setQuery(keyword);
+    addToSearchHistory(keyword);
     onSearch(keyword);
   };
 
   const handleSmartSearch = () => {
     if (query.trim()) {
+      addToSearchHistory(query);
       onSearch(query);
     }
   };
 
   const handleRecentSearchClick = (search: string) => {
     setQuery(search);
+    addToSearchHistory(search);
     onSearch(search);
   };
 
@@ -46,6 +99,10 @@ export const SmartSearchBox = ({
       handleSmartSearch();
     }
   };
+
+  // 표시할 최근 검색어 결정
+  const displayRecentSearches = recentSearches.length > 0 ? recentSearches : sampleRecentSearches;
+  const isUsingRealHistory = recentSearches.length > 0;
 
   return (
     <Card className="mb-4 shadow-lg border-0 bg-white/95 backdrop-blur">
@@ -74,22 +131,50 @@ export const SmartSearchBox = ({
           </div>
         </div>
 
-        {/* 최근 검색어 - 컴팩트한 박스 형태 */}
+        {/* 최근 검색어 */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            최근 검색
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {recentSearches.map((search, index) => (
-              <Badge 
-                key={index} 
-                variant="outline"
-                className="cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors max-w-xs truncate text-xs"
-                onClick={() => handleRecentSearchClick(search)}
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              최근 검색 {!isUsingRealHistory && <span className="text-xs text-gray-500">(샘플)</span>}
+            </h4>
+            {isUsingRealHistory && recentSearches.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSearchHistory}
+                className="h-auto p-1 text-gray-500 hover:text-red-600"
+                title="전체 삭제"
               >
-                {search}
-              </Badge>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {displayRecentSearches.map((search, index) => (
+              <div key={isUsingRealHistory ? `real-${index}` : `sample-${index}`} className="relative group">
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors max-w-xs truncate text-xs pr-6"
+                  onClick={() => handleRecentSearchClick(search)}
+                >
+                  {search}
+                </Badge>
+                {isUsingRealHistory && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromSearchHistory(index);
+                    }}
+                    className="absolute -top-1 -right-1 h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-200 hover:bg-red-100 rounded-full"
+                    title="삭제"
+                  >
+                    <X className="h-2 w-2 text-gray-600 hover:text-red-600" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         </div>
