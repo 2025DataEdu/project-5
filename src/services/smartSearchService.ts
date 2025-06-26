@@ -27,6 +27,25 @@ export const generateEmbeddings = async () => {
   }
 };
 
+export const generatePdfEmbeddings = async () => {
+  console.log('🔄 Starting PDF embedding generation...');
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-pdf-embeddings');
+    
+    if (error) {
+      console.error('❌ PDF embedding generation error:', error);
+      throw error;
+    }
+    
+    console.log('✅ PDF embedding generation completed:', data);
+    return data;
+  } catch (error) {
+    console.error('💥 Generate PDF embeddings failed:', error);
+    throw error;
+  }
+};
+
 export const performSmartSearch = async (
   query: string, 
   options: SmartSearchOptions = {}

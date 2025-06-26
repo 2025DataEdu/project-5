@@ -6,6 +6,7 @@ import { ManageTabContent } from "@/components/ManageTabContent";
 import { UploadSection } from "@/components/UploadSection";
 import { StatsSection } from "@/components/StatsSection";
 import { PageHeader } from "@/components/PageHeader";
+import { SmartSearchManager } from "@/components/SmartSearchManager";
 import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
 import { BombEffect } from "@/components/effects/BombEffect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,7 +40,7 @@ const Index = () => {
         {/* 검색 결과를 더 위쪽에 배치 */}
         <div className="mt-4">
           <Tabs defaultValue="search" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4 bg-white/80 backdrop-blur border shadow-sm">
+            <TabsList className="grid w-full grid-cols-5 mb-4 bg-white/80 backdrop-blur border shadow-sm">
               <TabsTrigger 
                 value="search" 
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
@@ -57,6 +58,12 @@ const Index = () => {
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
               >
                 문서 업로드
+              </TabsTrigger>
+              <TabsTrigger 
+                value="smart"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+              >
+                임베딩 관리
               </TabsTrigger>
               <TabsTrigger 
                 value="manage"
@@ -95,6 +102,14 @@ const Index = () => {
               <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
                 <CardContent className="p-6">
                   <UploadSection />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="smart" className="mt-0">
+              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
+                <CardContent className="p-6">
+                  <SmartSearchManager />
                 </CardContent>
               </Card>
             </TabsContent>
