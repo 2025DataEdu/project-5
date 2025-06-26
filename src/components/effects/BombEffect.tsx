@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { BombIcon } from './BombIcon';
 import { ExplosionEffect } from './ExplosionEffect';
-import { ShockwaveEffect } from './ShockwaveEffect';
 import { SmokeEffect } from './SmokeEffect';
 import { ScreenShake } from './ScreenShake';
 
@@ -13,7 +12,6 @@ interface BombEffectProps {
 
 export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
   const [isExploding, setIsExploding] = useState(false);
-  const [showShockwave, setShowShockwave] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
   useEffect(() => {
@@ -23,12 +21,7 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
         setIsExploding(true);
       }, 750);
       
-      // 1초 후 충격파
-      const shockwaveTimer = setTimeout(() => {
-        setShowShockwave(true);
-      }, 1000);
-      
-      // 1.2초 후 연기 효과 (더 빨리 시작)
+      // 1.2초 후 연기 효과
       const smokeTimer = setTimeout(() => {
         setShowSmoke(true);
       }, 1200);
@@ -36,14 +29,12 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
       // 3초 후 이펙트 제거
       const completeTimer = setTimeout(() => {
         setIsExploding(false);
-        setShowShockwave(false);
         setShowSmoke(false);
         onComplete?.();
       }, 3000);
       
       return () => {
         clearTimeout(explodeTimer);
-        clearTimeout(shockwaveTimer);
         clearTimeout(smokeTimer);
         clearTimeout(completeTimer);
       };
@@ -61,7 +52,6 @@ export const BombEffect = ({ show, onComplete }: BombEffectProps) => {
       
       <BombIcon show={!isExploding} />
       <ExplosionEffect show={isExploding} />
-      <ShockwaveEffect show={showShockwave} />
       <SmokeEffect show={showSmoke} />
       <ScreenShake isActive={isExploding} />
     </div>
