@@ -56,6 +56,8 @@ export const SmartSearchManager = () => {
       console.log('🚀 Starting embedding generation...');
       const result = await generateEmbeddings();
       setLastGeneration(result);
+      
+      // 임베딩 생성 완료 후 통계 새로고침
       await loadStats();
       
       console.log('✅ Embedding generation completed:', result);
@@ -83,6 +85,8 @@ export const SmartSearchManager = () => {
       console.log('🚀 Starting PDF embedding generation...');
       const result = await generatePdfEmbeddings();
       setLastPdfGeneration(result);
+      
+      // PDF 임베딩 생성 완료 후 통계 새로고침
       await loadStats();
       
       console.log('✅ PDF Embedding generation completed:', result);
