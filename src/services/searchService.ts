@@ -1,5 +1,4 @@
 
-
 import { supabase } from "@/integrations/supabase/client";
 import { logSearch } from "./analyticsService";
 
@@ -15,30 +14,41 @@ export interface SearchResult {
   url: string;
 }
 
+// 문서의 고유 식별자를 생성하는 함수
+const generateDocumentId = (doc: any, type: string): string => {
+  if (doc.id) {
+    return `${type}-${doc.id}`;
+  }
+  // 제목과 부서명을 조합하여 일관된 ID 생성
+  const titleHash = doc.제목 || doc.title || doc.담당업무 || 'untitled';
+  const deptHash = doc.전체부서명 || doc.department || doc.부서명 || 'unknown';
+  const normalized = `${titleHash}-${deptHash}`.replace(/\s+/g, '-').toLowerCase();
+  return `${type}-${normalized}`;
+};
+
+// 문서 제목을 정규화하는 함수
+const normalizeTitle = (title: string): string => {
+  return title?.trim().replace(/\s+/g, ' ') || '';
+};
+
 export const searchDocuments = async (query: string): Promise<SearchResult[]> => {
   try {
     console.log('🔍 Searching documents with query:', query);
     
-    // 검색어를 더 유연하게 처리 - 공백으로 분리하여 각각 검색
     const searchTerms = query.trim().split(/\s+/);
-    const searchPattern = searchTerms.map(term => `%${term}%`).join('|');
     
-    console.log('🔍 Search terms:', searchTerms, 'Pattern:', searchPattern);
-    
-    // 결재문서목록 테이블에서 검색 - 더 유연한 검색 조건
     const { data: documents, error: docsError } = await supabase
       .from('결재문서목록')
       .select('*')
       .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%,제목.ilike.%${searchTerms[0]}%`)
       .order('생성일자', { ascending: false })
-      .limit(30); // 30개로 제한
+      .limit(30);
 
     console.log('📄 Documents query result:', { 
       documents, 
       error: docsError, 
       queryUsed: query,
-      documentsCount: documents?.length || 0,
-      firstFewResults: documents?.slice(0, 3)
+      documentsCount: documents?.length || 0
     });
 
     if (docsError) {
@@ -47,20 +57,17 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
     }
 
     if (!documents || documents.length === 0) {
-      // 더 넓은 검색을 시도 - 단일 문자라도 포함된 것 검색
-      console.log('📄 No exact matches, trying broader search...');
       const { data: broadDocuments, error: broadError } = await supabase
         .from('결재문서목록')
         .select('*')
         .not('제목', 'is', null)
         .order('생성일자', { ascending: false })
-        .limit(15); // 15개로 제한
+        .limit(15);
       
       if (broadError) {
         console.error('❌ Broad search error:', broadError);
       } else {
         console.log('📄 Broad search results:', broadDocuments?.length || 0);
-        // 클라이언트 사이드에서 필터링
         const filteredDocs = broadDocuments?.filter(doc => 
           doc.제목?.toLowerCase().includes(query.toLowerCase()) ||
           doc.전체부서명?.toLowerCase().includes(query.toLowerCase())
@@ -69,8 +76,8 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
         if (filteredDocs.length > 0) {
           console.log('📄 Client-side filtered results:', filteredDocs.length);
           const documentResults: SearchResult[] = filteredDocs.map(doc => ({
-            id: doc.id?.toString() || Math.random().toString(),
-            title: doc.제목 || '제목 없음',
+            id: generateDocumentId(doc, '결재문서'),
+            title: normalizeTitle(doc.제목 || '제목 없음'),
             content: `${doc.제목 || ''} - ${doc.전체부서명 || ''}에서 작성된 결재문서입니다.`,
             source: "내부문서",
             department: doc.전체부서명 || '미분류',
@@ -87,12 +94,11 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
       return [];
     }
 
-    // 문서 결과를 SearchResult 형태로 변환
     const documentResults: SearchResult[] = documents.map(doc => {
       console.log('🔄 Transforming document:', doc);
       return {
-        id: doc.id?.toString() || Math.random().toString(),
-        title: doc.제목 || '제목 없음',
+        id: generateDocumentId(doc, '결재문서'),
+        title: normalizeTitle(doc.제목 || '제목 없음'),
         content: `${doc.제목 || ''} - ${doc.전체부서명 || ''}에서 작성된 결재문서입니다.`,
         source: "내부문서",
         department: doc.전체부서명 || '미분류',
@@ -115,14 +121,13 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
   try {
     console.log('🔍 Searching PDF documents with query:', query);
     
-    // PDF 문서 테이블에서 검색 - 더 유연하게
     const { data: pdfDocs, error: pdfError } = await supabase
       .from('pdf_documents')
       .select('*')
       .or(`title.ilike.%${query}%,content_text.ilike.%${query}%,department.ilike.%${query}%,file_name.ilike.%${query}%`)
       .eq('status', 'active')
       .order('upload_date', { ascending: false })
-      .limit(30); // 30개로 제한
+      .limit(30);
 
     console.log('📁 PDF documents query result:', { 
       pdfDocs, 
@@ -141,12 +146,11 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
       return [];
     }
 
-    // PDF 문서 결과를 SearchResult 형태로 변환
     const pdfResults: SearchResult[] = pdfDocs.map(pdf => {
       console.log('🔄 Transforming PDF document:', pdf);
       return {
-        id: pdf.id || Math.random().toString(),
-        title: pdf.title || pdf.file_name || '제목 없음',
+        id: generateDocumentId(pdf, 'PDF문서'),
+        title: normalizeTitle(pdf.title || pdf.file_name || '제목 없음'),
         content: pdf.content_text || `${pdf.title || pdf.file_name}에 대한 PDF 문서입니다.`,
         source: "PDF문서",
         department: pdf.department || '미분류',
@@ -169,12 +173,11 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching employees with query:', query);
     
-    // 직원정보 테이블에서 검색 - 더 유연하게
     const { data: employees, error: empError } = await supabase
       .from('직원정보')
       .select('*')
       .or(`담당업무.ilike.%${query}%,부서명.ilike.%${query}%,직책.ilike.%${query}%`)
-      .limit(15); // 15개로 제한
+      .limit(15);
 
     console.log('👥 Employees query result:', { 
       employees, 
@@ -193,12 +196,11 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
       return [];
     }
 
-    // 직원정보 결과를 SearchResult 형태로 변환
     const employeeResults: SearchResult[] = employees.map(emp => {
       console.log('🔄 Transforming employee:', emp);
       return {
-        id: emp.id?.toString() || Math.random().toString(),
-        title: `${emp.직책 || '직책미상'} - ${emp.담당업무 || '업무미상'}`,
+        id: generateDocumentId(emp, '직원정보'),
+        title: normalizeTitle(`${emp.직책 || '직책미상'} - ${emp.담당업무 || '업무미상'}`),
         content: `${emp.부서명 || ''}에서 ${emp.담당업무 || ''}를 담당하고 있습니다. 연락처: ${emp.전화번호 || '미등록'}`,
         source: "내부문서",
         department: emp.부서명 || '미분류',
@@ -217,13 +219,41 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
   }
 };
 
+// 강화된 중복 제거 함수
+const removeDuplicates = (results: SearchResult[]): SearchResult[] => {
+  const seen = new Set<string>();
+  const uniqueResults: SearchResult[] = [];
+  
+  console.log('🔍 Starting duplicate removal for', results.length, 'results');
+  
+  for (const result of results) {
+    // 여러 기준으로 중복 검사
+    const titleKey = normalizeTitle(result.title);
+    const deptKey = result.department || '';
+    const typeKey = result.type || '';
+    
+    // 복합 키 생성: 제목 + 부서 + 타입
+    const compositeKey = `${titleKey}|${deptKey}|${typeKey}`.toLowerCase();
+    
+    if (!seen.has(compositeKey)) {
+      seen.add(compositeKey);
+      uniqueResults.push(result);
+      console.log('✅ Added unique result:', { title: titleKey, department: deptKey, type: typeKey });
+    } else {
+      console.log('🔄 Skipped duplicate:', { title: titleKey, department: deptKey, type: typeKey });
+    }
+  }
+  
+  console.log(`🎯 Duplicate removal completed: ${results.length} -> ${uniqueResults.length}`);
+  return uniqueResults;
+};
+
 export const performSearch = async (query: string): Promise<SearchResult[]> => {
   console.log('🚀 Starting combined search for query:', query);
   
   const searchResults: SearchResult[] = [];
   const searchErrors: string[] = [];
 
-  // 각 검색을 순차적으로 실행하여 모든 결과를 수집
   try {
     const documentResults = await searchDocuments(query);
     searchResults.push(...documentResults);
@@ -254,24 +284,28 @@ export const performSearch = async (query: string): Promise<SearchResult[]> => {
     console.error('👥 Employee search failed:', error);
   }
 
+  // 중복 제거 적용
+  const uniqueResults = removeDuplicates(searchResults);
+
   console.log('📊 Search results summary:', {
     totalResults: searchResults.length,
+    uniqueResults: uniqueResults.length,
+    duplicatesRemoved: searchResults.length - uniqueResults.length,
     errors: searchErrors.length,
     searchErrors,
     resultsByType: {
-      documents: searchResults.filter(r => r.type === '결재문서').length,
-      pdfs: searchResults.filter(r => r.type === 'PDF문서').length,
-      employees: searchResults.filter(r => r.type === '직원정보').length
+      documents: uniqueResults.filter(r => r.type === '결재문서').length,
+      pdfs: uniqueResults.filter(r => r.type === 'PDF문서').length,
+      employees: uniqueResults.filter(r => r.type === '직원정보').length
     }
   });
 
   // 검색 로그 기록
-  await logSearch(query, searchResults.length);
+  await logSearch(query, uniqueResults.length);
   
-  // 모든 검색에서 실패했고 결과가 없는 경우에만 에러 발생
-  if (searchErrors.length > 0 && searchResults.length === 0) {
+  if (searchErrors.length > 0 && uniqueResults.length === 0) {
     throw new Error(`검색 실패: ${searchErrors.join(', ')}`);
   }
   
-  return searchResults;
+  return uniqueResults;
 };

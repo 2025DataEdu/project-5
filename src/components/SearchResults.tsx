@@ -11,6 +11,20 @@ interface SearchResultsProps {
   isLoading: boolean;
 }
 
+// 안정적인 키 생성 함수
+const generateStableKey = (result: SearchResult, index: number): string => {
+  // ID가 있으면 ID 사용, 없으면 제목과 부서로 키 생성
+  if (result.id && result.id !== 'unknown') {
+    return result.id;
+  }
+  
+  const title = result.title?.replace(/\s+/g, '-').toLowerCase() || 'untitled';
+  const dept = result.department?.replace(/\s+/g, '-').toLowerCase() || 'unknown';
+  const type = result.type?.replace(/\s+/g, '-').toLowerCase() || 'document';
+  
+  return `${type}-${title}-${dept}-${index}`;
+};
+
 export const SearchResults = ({ results, query, isLoading }: SearchResultsProps) => {
   if (isLoading) {
     return <SearchResultsLoading />;
@@ -23,6 +37,17 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
   // 최대 50개 결과로 제한
   const limitedResults = results.slice(0, 50);
   const isLimited = results.length > 50;
+
+  console.log('📊 SearchResults rendering:', {
+    totalResults: results.length,
+    limitedResults: limitedResults.length,
+    isLimited,
+    resultKeys: limitedResults.map((result, index) => ({
+      key: generateStableKey(result, index),
+      title: result.title,
+      id: result.id
+    }))
+  });
 
   return (
     <div className="space-y-6">
@@ -37,13 +62,16 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
       )}
 
       <div className="space-y-4">
-        {limitedResults.map((result, index) => (
-          <SearchResultCard 
-            key={`${result.id}-${index}`}
-            result={result} 
-            searchQuery={query} 
-          />
-        ))}
+        {limitedResults.map((result, index) => {
+          const stableKey = generateStableKey(result, index);
+          return (
+            <SearchResultCard 
+              key={stableKey}
+              result={result} 
+              searchQuery={query} 
+            />
+          );
+        })}
       </div>
     </div>
   );

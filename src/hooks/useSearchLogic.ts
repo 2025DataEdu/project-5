@@ -5,6 +5,50 @@ import { performSearch, SearchResult } from "@/services/searchService";
 import { debugDatabaseContent } from "@/services/debugService";
 import { performSmartSearch } from "@/services/smartSearchService";
 
+// 강화된 중복 제거 함수
+const removeDuplicatesAdvanced = (smartResults: SearchResult[], traditionalResults: SearchResult[]): SearchResult[] => {
+  console.log('🔍 Advanced duplicate removal starting...');
+  console.log(`Smart results: ${smartResults.length}, Traditional results: ${traditionalResults.length}`);
+  
+  const seen = new Map<string, SearchResult>();
+  const combinedResults: SearchResult[] = [];
+  
+  // 문서의 고유 키를 생성하는 함수
+  const generateUniqueKey = (result: SearchResult): string => {
+    const title = result.title?.trim().replace(/\s+/g, ' ').toLowerCase() || '';
+    const dept = result.department?.trim().toLowerCase() || '';
+    const type = result.type?.trim().toLowerCase() || '';
+    return `${title}|${dept}|${type}`;
+  };
+  
+  // 스마트 검색 결과를 우선적으로 추가 (더 정확한 결과로 간주)
+  smartResults.forEach(result => {
+    const key = generateUniqueKey(result);
+    if (!seen.has(key)) {
+      seen.set(key, result);
+      combinedResults.push(result);
+      console.log('✅ Added smart result:', { title: result.title, key });
+    } else {
+      console.log('🔄 Skipped duplicate smart result:', { title: result.title, key });
+    }
+  });
+  
+  // 전통적 검색 결과에서 중복되지 않는 것들만 추가
+  traditionalResults.forEach(result => {
+    const key = generateUniqueKey(result);
+    if (!seen.has(key)) {
+      seen.set(key, result);
+      combinedResults.push(result);
+      console.log('✅ Added traditional result:', { title: result.title, key });
+    } else {
+      console.log('🔄 Skipped duplicate traditional result:', { title: result.title, key });
+    }
+  });
+  
+  console.log(`🎯 Advanced duplicate removal completed: ${smartResults.length + traditionalResults.length} -> ${combinedResults.length}`);
+  return combinedResults;
+};
+
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -29,17 +73,15 @@ export const useSearchLogic = () => {
     setShowGrayBomb(false);
 
     try {
-      // 디버깅: 데이터베이스 내용 확인
       console.log('🔍 Checking database content first...');
       await debugDatabaseContent();
       
-      // 1단계: 벡터 유사도 검색 시도 - 임계값을 0.8로 상향
       console.log("🧠 Attempting smart vector search...");
       let smartResults: SearchResult[] = [];
       
       try {
         smartResults = await performSmartSearch(query, {
-          threshold: 0.8, // 80% 이상으로 상향 조정
+          threshold: 0.8,
           limit: 50,
           useVectorSearch: true
         });
@@ -48,7 +90,6 @@ export const useSearchLogic = () => {
         console.warn('⚠️ Smart search failed, continuing with traditional search:', smartError);
       }
 
-      // 2단계: 기존 키워드 검색 수행
       console.log("🔍 Performing traditional database search...");
       let traditionalResults: SearchResult[] = [];
       
@@ -59,38 +100,22 @@ export const useSearchLogic = () => {
         console.error('❌ Traditional search failed:', searchError);
       }
 
-      // 3단계: 결과 통합 및 중복 제거
-      const combinedResults = [...smartResults];
-      
-      // 기존 검색 결과에서 중복되지 않는 것들만 추가
-      traditionalResults.forEach(traditional => {
-        const isDuplicate = smartResults.some(smart => 
-          smart.id === traditional.id || 
-          smart.title === traditional.title
-        );
-        
-        if (!isDuplicate) {
-          combinedResults.push(traditional);
-        }
-      });
+      // 강화된 중복 제거 로직 적용
+      const combinedResults = removeDuplicatesAdvanced(smartResults, traditionalResults);
 
-      console.log(`🔗 Combined search results: ${combinedResults.length} total`);
+      console.log(`🔗 Final combined search results: ${combinedResults.length} total`);
 
-      // 4단계: 결과가 있으면 표시
       if (combinedResults.length > 0) {
         console.log('✅ Search results found, displaying results');
         setSelectedRegulation(combinedResults[0]);
         setShowComparison(true);
         setShowHistory(true);
         setSearchResults(combinedResults);
-        // 성공 시 폭죽 이펙트
         setShowConfetti(true);
       } else {
-        // 5단계: 결과가 0개일 때 회색 폭탄 이펙트
         console.log('💥 No search results found - showing gray bomb effect!');
         setShowGrayBomb(true);
         
-        // 6단계: 결과가 없을 때 AI API 호출
         console.log('❌ No search results found, trying AI API...');
         try {
           console.log('🤖 Calling AI regulation search function...');
