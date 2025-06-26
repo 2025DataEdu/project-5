@@ -113,16 +113,16 @@ export const SmartSearchBox = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* 추천 키워드 */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">추천 키워드</h4>
-          <div className="flex flex-wrap gap-2">
+          <h4 className="text-base font-semibold text-gray-800 mb-3">추천 키워드</h4>
+          <div className="flex flex-wrap gap-3">
             {recommendedKeywords.map(keyword => (
               <Badge 
                 key={keyword} 
                 variant="secondary" 
-                className="cursor-pointer hover:bg-blue-100 hover:text-blue-800 transition-colors" 
+                className="cursor-pointer hover:bg-blue-100 hover:text-blue-800 transition-colors text-sm px-3 py-2" 
                 onClick={() => handleKeywordClick(keyword)}
               >
                 {keyword}
@@ -133,29 +133,29 @@ export const SmartSearchBox = ({
 
         {/* 최근 검색어 */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              최근 검색 {!isUsingRealHistory && <span className="text-xs text-gray-500">(샘플)</span>}
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              최근 검색 {!isUsingRealHistory && <span className="text-sm text-gray-500">(샘플)</span>}
             </h4>
             {isUsingRealHistory && recentSearches.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearSearchHistory}
-                className="h-auto p-1 text-gray-500 hover:text-red-600"
+                className="h-auto p-2 text-gray-500 hover:text-red-600"
                 title="전체 삭제"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {displayRecentSearches.map((search, index) => (
               <div key={isUsingRealHistory ? `real-${index}` : `sample-${index}`} className="relative group">
                 <Badge 
                   variant="outline"
-                  className="cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors max-w-xs truncate text-xs pr-6"
+                  className="cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors max-w-xs truncate text-sm pr-8 py-2"
                   onClick={() => handleRecentSearchClick(search)}
                 >
                   {search}
@@ -168,10 +168,10 @@ export const SmartSearchBox = ({
                       e.stopPropagation();
                       removeFromSearchHistory(index);
                     }}
-                    className="absolute -top-1 -right-1 h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-200 hover:bg-red-100 rounded-full"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-200 hover:bg-red-100 rounded-full"
                     title="삭제"
                   >
-                    <X className="h-2 w-2 text-gray-600 hover:text-red-600" />
+                    <X className="h-3 w-3 text-gray-600 hover:text-red-600" />
                   </Button>
                 )}
               </div>
@@ -180,30 +180,30 @@ export const SmartSearchBox = ({
         </div>
 
         {/* 통합 검색 입력 - X 버튼 포함 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="relative">
             <Textarea 
               placeholder="키워드나 질문을 입력하세요 (예: 개인정보, 출장비 신청 절차는 어떻게 되나요?)" 
               value={query} 
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="min-h-[100px] border-2 border-blue-200 focus:border-blue-400 pr-10" 
+              className="min-h-[120px] border-2 border-blue-200 focus:border-blue-400 pr-12 text-base" 
             />
             {query && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-gray-100"
+                className="absolute top-3 right-3 h-8 w-8 p-0 hover:bg-gray-100"
                 onClick={handleClearQuery}
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-5 w-5 text-gray-500" />
               </Button>
             )}
           </div>
           <Button 
             onClick={handleSmartSearch} 
             disabled={isSearching || !query.trim()} 
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold"
           >
             {isSearching ? "검색 중..." : "스마트 검색하기"}
           </Button>
