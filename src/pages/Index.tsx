@@ -1,3 +1,4 @@
+
 import { SmartSearchBox } from "@/components/SmartSearchBox";
 import { SearchTabContent } from "@/components/SearchTabContent";
 import { PopularTabContent } from "@/components/PopularTabContent";
@@ -30,51 +31,59 @@ const Index = () => {
   } = useSearchLogic();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+      {/* 배경 데코레이션 */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+      <div className="absolute top-40 right-10 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+      <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
+      
+      <div className="container mx-auto px-6 py-8 relative z-10">
         <PageHeader />
         
-        <SmartSearchBox onSearch={handleSmartSearch} isSearching={isSearching} />
+        <div className="mb-8">
+          <SmartSearchBox onSearch={handleSmartSearch} isSearching={isSearching} />
+        </div>
         
-        {/* 검색 결과를 더 위쪽에 배치 */}
-        <div className="mt-4">
+        {/* 검색 결과 탭 */}
+        <div className="mt-6">
           <Tabs defaultValue="search" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-4 bg-white/80 backdrop-blur border shadow-sm">
+            <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/90 backdrop-blur-sm border shadow-lg rounded-xl p-2">
               <TabsTrigger 
                 value="search" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
               >
                 검색 결과
               </TabsTrigger>
               <TabsTrigger 
                 value="popular"
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
               >
                 인기 규정
               </TabsTrigger>
               <TabsTrigger 
                 value="upload"
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
               >
                 문서 업로드
               </TabsTrigger>
               <TabsTrigger 
                 value="smart"
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
               >
                 임베딩 관리
               </TabsTrigger>
               <TabsTrigger 
                 value="manage"
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white font-semibold rounded-lg px-4 py-3 text-base transition-all duration-200"
               >
                 부서별 관리
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="search" className="mt-0">
-              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
-                <CardContent className="p-6">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
                   <SearchTabContent
                     searchQuery={searchQuery}
                     searchResults={searchResults}
@@ -90,32 +99,32 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="popular" className="mt-0">
-              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
-                <CardContent className="p-6">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
                   <PopularTabContent />
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="upload" className="mt-0">
-              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
-                <CardContent className="p-6">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
                   <UploadSection />
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="smart" className="mt-0">
-              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
-                <CardContent className="p-6">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
                   <SmartSearchManager />
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="manage" className="mt-0">
-              <Card className="shadow-md border-0 bg-white/95 backdrop-blur">
-                <CardContent className="p-6">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
                   <ManageTabContent />
                 </CardContent>
               </Card>
@@ -123,9 +132,13 @@ const Index = () => {
           </Tabs>
         </div>
 
-        {/* 통계 섹션 - 항상 표시 */}
-        <div className="mt-8">
-          <StatsSection />
+        {/* 통계 섹션 */}
+        <div className="mt-12">
+          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <StatsSection />
+            </CardContent>
+          </Card>
         </div>
       </div>
 
