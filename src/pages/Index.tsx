@@ -8,6 +8,7 @@ import { StatsSection } from "@/components/StatsSection";
 import { PageHeader } from "@/components/PageHeader";
 import { SmartSearchManager } from "@/components/SmartSearchManager";
 import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
+import { GrayBombEffect } from "@/components/effects/GrayBombEffect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSearchLogic } from "@/hooks/useSearchLogic";
@@ -23,7 +24,9 @@ const Index = () => {
     aiResponse,
     searchError,
     showConfetti,
+    showGrayBomb,
     setShowConfetti,
+    setShowGrayBomb,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -127,10 +130,14 @@ const Index = () => {
         </div>
       </div>
 
-      {/* 폭죽 이펙트만 남김 */}
+      {/* 이펙트 컴포넌트들 */}
       <ConfettiEffect 
         show={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
+      />
+      <GrayBombEffect 
+        show={showGrayBomb} 
+        onComplete={() => setShowGrayBomb(false)} 
       />
     </div>
   );
