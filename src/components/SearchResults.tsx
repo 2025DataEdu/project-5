@@ -29,7 +29,7 @@ export const SearchResults = ({ results, query, isLoading }: SearchResultsProps)
           <SearchResultCard 
             key={result.id} 
             result={result} 
-            query={query} 
+            searchQuery={query} 
           />
         ))}
       </div>
