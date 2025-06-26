@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { logSearch } from "./analyticsService";
 
@@ -17,19 +18,26 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching documents with query:', query);
     
-    // 결재문서목록 테이블에서 검색 - 공개여부 조건 제거
+    // 검색어를 더 유연하게 처리 - 공백으로 분리하여 각각 검색
+    const searchTerms = query.trim().split(/\s+/);
+    const searchPattern = searchTerms.map(term => `%${term}%`).join('|');
+    
+    console.log('🔍 Search terms:', searchTerms, 'Pattern:', searchPattern);
+    
+    // 결재문서목록 테이블에서 검색 - 더 유연한 검색 조건
     const { data: documents, error: docsError } = await supabase
       .from('결재문서목록')
       .select('*')
-      .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%`)
+      .or(`제목.ilike.%${query}%,전체부서명.ilike.%${query}%,제목.ilike.%${searchTerms[0]}%`)
       .order('생성일자', { ascending: false })
-      .limit(20);
+      .limit(30);
 
     console.log('📄 Documents query result:', { 
       documents, 
       error: docsError, 
       queryUsed: query,
-      documentsCount: documents?.length || 0 
+      documentsCount: documents?.length || 0,
+      firstFewResults: documents?.slice(0, 3)
     });
 
     if (docsError) {
@@ -38,6 +46,42 @@ export const searchDocuments = async (query: string): Promise<SearchResult[]> =>
     }
 
     if (!documents || documents.length === 0) {
+      // 더 넓은 검색을 시도 - 단일 문자라도 포함된 것 검색
+      console.log('📄 No exact matches, trying broader search...');
+      const { data: broadDocuments, error: broadError } = await supabase
+        .from('결재문서목록')
+        .select('*')
+        .not('제목', 'is', null)
+        .order('생성일자', { ascending: false })
+        .limit(10);
+      
+      if (broadError) {
+        console.error('❌ Broad search error:', broadError);
+      } else {
+        console.log('📄 Broad search results:', broadDocuments?.length || 0);
+        // 클라이언트 사이드에서 필터링
+        const filteredDocs = broadDocuments?.filter(doc => 
+          doc.제목?.toLowerCase().includes(query.toLowerCase()) ||
+          doc.전체부서명?.toLowerCase().includes(query.toLowerCase())
+        ) || [];
+        
+        if (filteredDocs.length > 0) {
+          console.log('📄 Client-side filtered results:', filteredDocs.length);
+          const documentResults: SearchResult[] = filteredDocs.map(doc => ({
+            id: doc.id?.toString() || Math.random().toString(),
+            title: doc.제목 || '제목 없음',
+            content: `${doc.제목 || ''} - ${doc.전체부서명 || ''}에서 작성된 결재문서입니다.`,
+            source: "내부문서",
+            department: doc.전체부서명 || '미분류',
+            lastModified: doc.생성일자 || new Date().toISOString().split('T')[0],
+            fileName: `${doc.제목 || 'document'}.pdf`,
+            type: "결재문서",
+            url: '#'
+          }));
+          return documentResults;
+        }
+      }
+      
       console.log('📄 No documents found for query:', query);
       return [];
     }
@@ -70,14 +114,14 @@ export const searchPdfDocuments = async (query: string): Promise<SearchResult[]>
   try {
     console.log('🔍 Searching PDF documents with query:', query);
     
-    // PDF 문서 테이블에서 검색
+    // PDF 문서 테이블에서 검색 - 더 유연하게
     const { data: pdfDocs, error: pdfError } = await supabase
       .from('pdf_documents')
       .select('*')
       .or(`title.ilike.%${query}%,content_text.ilike.%${query}%,department.ilike.%${query}%,file_name.ilike.%${query}%`)
       .eq('status', 'active')
       .order('upload_date', { ascending: false })
-      .limit(20);
+      .limit(30);
 
     console.log('📁 PDF documents query result:', { 
       pdfDocs, 
@@ -124,12 +168,12 @@ export const searchEmployees = async (query: string): Promise<SearchResult[]> =>
   try {
     console.log('🔍 Searching employees with query:', query);
     
-    // 직원정보 테이블에서 검색
+    // 직원정보 테이블에서 검색 - 더 유연하게
     const { data: employees, error: empError } = await supabase
       .from('직원정보')
       .select('*')
       .or(`담당업무.ilike.%${query}%,부서명.ilike.%${query}%,직책.ilike.%${query}%`)
-      .limit(10);
+      .limit(15);
 
     console.log('👥 Employees query result:', { 
       employees, 

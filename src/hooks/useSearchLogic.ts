@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performSearch, SearchResult } from "@/services/searchService";
+import { debugDatabaseContent } from "@/services/debugService";
 
 export const useSearchLogic = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,6 +24,10 @@ export const useSearchLogic = () => {
     setSearchError(null);
 
     try {
+      // 디버깅: 데이터베이스 내용 확인
+      console.log('🔍 Checking database content first...');
+      await debugDatabaseContent();
+      
       // 실제 데이터베이스에서 검색 수행
       console.log("🔍 Performing database search for:", query);
       const databaseResults = await performSearch(query);
