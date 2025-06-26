@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      document_views: {
+        Row: {
+          created_at: string
+          department: string | null
+          document_id: string
+          document_title: string | null
+          document_type: string
+          id: string
+          search_query: string | null
+          user_session: string | null
+          view_date: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          document_id: string
+          document_title?: string | null
+          document_type: string
+          id?: string
+          search_query?: string | null
+          user_session?: string | null
+          view_date?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          document_id?: string
+          document_title?: string | null
+          document_type?: string
+          id?: string
+          search_query?: string | null
+          user_session?: string | null
+          view_date?: string
+        }
+        Relationships: []
+      }
       pdf_documents: {
         Row: {
           content_text: string | null
@@ -48,6 +84,81 @@ export type Database = {
           status?: string | null
           title?: string | null
           upload_date?: string
+        }
+        Relationships: []
+      }
+      popular_statistics: {
+        Row: {
+          created_at: string
+          department: string | null
+          document_id: string
+          document_title: string | null
+          document_type: string
+          id: string
+          last_viewed: string | null
+          monthly_views: number | null
+          rank_position: number | null
+          updated_at: string
+          view_count: number | null
+          weekly_growth_rate: number | null
+          weekly_views: number | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          document_id: string
+          document_title?: string | null
+          document_type: string
+          id?: string
+          last_viewed?: string | null
+          monthly_views?: number | null
+          rank_position?: number | null
+          updated_at?: string
+          view_count?: number | null
+          weekly_growth_rate?: number | null
+          weekly_views?: number | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          document_id?: string
+          document_title?: string | null
+          document_type?: string
+          id?: string
+          last_viewed?: string | null
+          monthly_views?: number | null
+          rank_position?: number | null
+          updated_at?: string
+          view_count?: number | null
+          weekly_growth_rate?: number | null
+          weekly_views?: number | null
+        }
+        Relationships: []
+      }
+      search_logs: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          results_count: number | null
+          search_date: string
+          user_session: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          results_count?: number | null
+          search_date?: string
+          user_session?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          results_count?: number | null
+          search_date?: string
+          user_session?: string | null
         }
         Relationships: []
       }

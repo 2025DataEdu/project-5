@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { logSearch } from "./analyticsService";
 
 export interface SearchResult {
   id: number;
@@ -137,6 +137,9 @@ export const performSearch = async (query: string): Promise<SearchResult[]> => {
     // Combine and return results
     const allResults = [...documentResults, ...pdfResults, ...employeeResults];
     console.log('Search completed, found', allResults.length, 'results');
+    
+    // 검색 로그 기록
+    await logSearch(query, allResults.length);
     
     return allResults;
   } catch (error) {

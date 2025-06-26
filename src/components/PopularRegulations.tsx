@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Eye, Users, Building } from "lucide-react";
+import { TrendingUp, Eye, Users, Building, Loader2 } from "lucide-react";
 
 interface PopularItem {
   rank: number;
@@ -17,9 +17,49 @@ interface PopularItem {
 interface PopularRegulationsProps {
   popularItems: PopularItem[];
   department?: string;
+  isLoading?: boolean;
 }
 
-export const PopularRegulations = ({ popularItems, department }: PopularRegulationsProps) => {
+export const PopularRegulations = ({ popularItems, department, isLoading }: PopularRegulationsProps) => {
+  if (isLoading) {
+    return (
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-red-600" />
+            {department ? `${department} 부서 인기 규정` : "전체 부서 인기 규정"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">통계를 불러오는 중...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (popularItems.length === 0) {
+    return (
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-red-600" />
+            {department ? `${department} 부서 인기 규정` : "전체 부서 인기 규정"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500">
+            <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>아직 통계 데이터가 없습니다.</p>
+            <p className="text-sm mt-1">검색과 문서 조회가 누적되면 인기 통계를 확인할 수 있습니다.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="mt-6">
       <CardHeader>
