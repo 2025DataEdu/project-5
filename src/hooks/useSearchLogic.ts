@@ -15,7 +15,6 @@ export const useSearchLogic = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showBomb, setShowBomb] = useState(false);
 
   const handleSmartSearch = async (query: string) => {
     console.log('🎯 Starting enhanced smart search for:', query);
@@ -26,7 +25,6 @@ export const useSearchLogic = () => {
     setAiResponse("");
     setSearchError(null);
     setShowConfetti(false);
-    setShowBomb(false);
 
     try {
       // 디버깅: 데이터베이스 내용 확인
@@ -46,8 +44,6 @@ export const useSearchLogic = () => {
         console.log(`🎯 Smart search results: ${smartResults.length} found`);
       } catch (smartError) {
         console.warn('⚠️ Smart search failed, continuing with traditional search:', smartError);
-        // 스마트 검색 실패 시 폭탄 이펙트
-        setShowBomb(true);
       }
 
       // 2단계: 기존 키워드 검색 수행
@@ -59,8 +55,6 @@ export const useSearchLogic = () => {
         console.log(`📊 Traditional search results: ${traditionalResults.length} found`);
       } catch (searchError) {
         console.error('❌ Traditional search failed:', searchError);
-        // 기존 검색 실패 시 폭탄 이펙트
-        setShowBomb(true);
       }
 
       // 3단계: 결과 통합 및 중복 제거
@@ -90,9 +84,8 @@ export const useSearchLogic = () => {
         // 성공 시 폭죽 이펙트
         setShowConfetti(true);
       } else {
-        // 5단계: 결과가 0개일 때 화려한 폭탄 이펙트 추가!
-        console.log('💥 No search results found - showing spectacular bomb effect!');
-        setShowBomb(true);
+        // 5단계: 결과가 0개일 때
+        console.log('❌ No search results found');
         
         // 6단계: 결과가 없을 때만 AI API 호출
         console.log('❌ No search results found, trying AI API...');
@@ -105,20 +98,16 @@ export const useSearchLogic = () => {
           if (error) {
             console.error('❌ AI function error:', error);
             setSearchError(`AI 검색 중 오류가 발생했습니다: ${error.message}`);
-            // AI 검색 실패 시 폭탄 이펙트는 이미 위에서 설정됨
           } else if (data?.success) {
             console.log('✅ AI response received:', data.response);
             setAiResponse(data.response);
-            // AI 응답 시에는 폭탄 이펙트가 이미 표시되었으므로 추가 이펙트 없음
           } else {
             console.log('⚠️ AI response received but no success flag:', data);
             setSearchError('AI에서 응답을 받지 못했습니다.');
-            // AI 응답 실패 시 폭탄 이펙트는 이미 위에서 설정됨
           }
         } catch (aiError) {
           console.error('💥 Error in AI search:', aiError);
           setSearchError(`AI 검색 서비스에 연결할 수 없습니다: ${aiError instanceof Error ? aiError.message : '알 수 없는 오류'}`);
-          // AI 검색 연결 실패 시 폭탄 이펙트는 이미 위에서 설정됨
         }
         setSearchResults([]);
       }
@@ -128,8 +117,6 @@ export const useSearchLogic = () => {
       
       setSearchError(`"${query}" 검색 실패: ${errorMessage}`);
       setSearchResults([]);
-      // 전체 검색 프로세스 실패 시 폭탄 이펙트
-      setShowBomb(true);
     } finally {
       setIsSearching(false);
       console.log('🏁 Enhanced search process completed');
@@ -146,9 +133,7 @@ export const useSearchLogic = () => {
     aiResponse,
     searchError,
     showConfetti,
-    showBomb,
     setShowConfetti,
-    setShowBomb,
     handleSmartSearch
   };
 };

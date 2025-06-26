@@ -8,7 +8,6 @@ import { StatsSection } from "@/components/StatsSection";
 import { PageHeader } from "@/components/PageHeader";
 import { SmartSearchManager } from "@/components/SmartSearchManager";
 import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
-import { BombEffect } from "@/components/effects/BombEffect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSearchLogic } from "@/hooks/useSearchLogic";
@@ -24,9 +23,7 @@ const Index = () => {
     aiResponse,
     searchError,
     showConfetti,
-    showBomb,
     setShowConfetti,
-    setShowBomb,
     handleSmartSearch
   } = useSearchLogic();
 
@@ -124,22 +121,16 @@ const Index = () => {
           </Tabs>
         </div>
 
-        {/* 통계 섹션 - 폭탄 이펙트가 표시될 때 숨김 */}
-        {!showBomb && (
-          <div className="mt-8">
-            <StatsSection />
-          </div>
-        )}
+        {/* 통계 섹션 - 항상 표시 */}
+        <div className="mt-8">
+          <StatsSection />
+        </div>
       </div>
 
-      {/* 이펙트 컴포넌트들 */}
+      {/* 폭죽 이펙트만 남김 */}
       <ConfettiEffect 
         show={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
-      />
-      <BombEffect 
-        show={showBomb} 
-        
       />
     </div>
   );
