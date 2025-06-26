@@ -47,31 +47,33 @@ export const ConfettiEffect = ({ show, onComplete }: ConfettiEffectProps) => {
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute animate-bounce"
+          className="absolute"
           style={{
             left: particle.x,
             top: particle.y,
             backgroundColor: particle.color,
             width: particle.size,
             height: particle.size,
-            transform: `rotate(${particle.rotation}deg)`,
             borderRadius: '50%',
-            animation: `confetti-fall 3s ease-out forwards`,
+            animation: 'confetti-fall 3s ease-out forwards',
+            transform: `rotate(${particle.rotation}deg)`,
           }}
         />
       ))}
-      <style jsx>{`
-        @keyframes confetti-fall {
-          0% {
-            transform: translateY(-10px) rotate(0deg);
-            opacity: 1;
+      <style>
+        {`
+          @keyframes confetti-fall {
+            0% {
+              transform: translateY(-10px) rotate(0deg);
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(100vh) rotate(720deg);
+              opacity: 0;
+            }
           }
-          100% {
-            transform: translateY(100vh) rotate(720deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
